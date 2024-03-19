@@ -1,6 +1,6 @@
 export let app_endpoint = "https://app/";
 export let s3_endpoint = "https://s3";
-export let bucket_name = "my_bucket";
+export let bucket_name = "storage";
 export let debug = true;
 export let stree_version_key = "stree_version";
 export let urls = {
@@ -11,11 +11,9 @@ export let urls = {
         share_document: "/share-document/"
 };
 
-export let plugins = {
-        'share': {
-                'enabled': false
-        },
-        'share_document': {
-                'enabled': false
-        }
-}
+
+/*
+ todo
+ e.g: export let plugins = ['sharing', 'onlyoffice'];
+ */
+export let plugins = [];

@@ -50,7 +50,7 @@ export let fileExtension = function (filename) {
 
 export function login() {
     let access_key = sessionStorage.getItem('shramba-access-key');
-    let secret_key = sessionStorage.getItem('shramba-secret-key');
+    let secret_key = sessionStorage.getItem('storage-secret-key');
     let s3client = null;
 
     if (!access_key || !secret_key) {
@@ -86,8 +86,8 @@ export function login() {
 }
 
 export async function getEC() {
-    let access_key = sessionStorage.getItem('shramba-access-key');
-    let secret_key = sessionStorage.getItem('shramba-secret-key');
+    let access_key = sessionStorage.getItem('storage-access-key');
+    let secret_key = sessionStorage.getItem('storage-secret-key');
 
     if (!access_key || !secret_key) {
         return null;
@@ -117,7 +117,7 @@ export async function getEC() {
             }
         });
 
-        sessionStorage.setItem('shramba-ec', credentials.token);
+        sessionStorage.setItem('storage-ec', credentials.token);
     } catch (e) {
         console.log("error getting ec");
         console.log(e);
@@ -139,7 +139,7 @@ export async function getEC() {
 
         try {
             const params = {
-                "Bucket": settings.shramba_bucket_name,
+                "Bucket": settings.bucket_name,
                 "Key": path
             };
             const command = new aws_client_s3.HeadObjectCommand(params);
@@ -164,7 +164,7 @@ export async function getEC() {
     // this creates "folder"
     async function createEmptyObject(path) {
         debug('in function createEmptyObject');
-        debug(`creating empty object in bucket ${settings.shramba_bucket_name} with key ${path}`);
+        debug(`creating empty object in bucket ${settings.bucket_name} with key ${path}`);
 
         if (!path || path === '') {
             throw new Error(`empty path in createEmptyObject`)
@@ -172,7 +172,7 @@ export async function getEC() {
 
         try {
             const params = {
-                "Bucket": settings.shramba_bucket_name,
+                "Bucket": settings.bucket_name,
                 "Key": path,
                 "Body": ''
             };
@@ -277,7 +277,7 @@ export async function getEC() {
             $("#progress-bar-modal").show();
 
             let params = {
-                Bucket: settings.shramba_bucket_name,
+                Bucket: settings.bucket_name,
                 Key: key,
                 Body: file,
             };
@@ -522,7 +522,7 @@ export async function getEC() {
             $.ajax({
                 url: settings.urls["get_user_shares"],
                 method: "GET",
-                data: {'access_key': sessionStorage.getItem('shramba-access-key')},
+                data: {'access_key': sessionStorage.getItem('storage-access-key')},
                 dataType: "json",
                 contentType: 'application/json; charset=utf-8',
                 success: function (data) {
@@ -546,7 +546,7 @@ export async function getEC() {
         updateNavigation();
 
         let params = {
-            Bucket: settings.shramba_bucket_name,
+            Bucket: settings.bucket_name,
             Prefix: prefix
         };
 
@@ -723,7 +723,7 @@ export async function getEC() {
         }
 
         let params = {
-            Bucket: settings.shramba_bucket_name,
+            Bucket: settings.bucket_name,
             Key: key,
             Tagging: {
                 TagSet: [
@@ -743,14 +743,14 @@ export async function getEC() {
     }
 
     async function setBucketVersion(key, now = null) {
-        debug(`updating ${settings.stree_version_key} tag of a bucket ${settings.shramba_bucket_name}`);
+        debug(`updating ${settings.stree_version_key} tag of a bucket ${settings.bucket_name}`);
 
         if (now == null) {
             now = currentTimestamp();
         }
 
         let params = {
-            Bucket: settings.shramba_bucket_name,
+            Bucket: settings.bucket_name,
             Tagging: {
                 TagSet: [
                     {
@@ -773,7 +773,7 @@ export async function getEC() {
     $("body").on("click", '.download-object', function () {
         let key = $(this).attr("data-key");
         let params = {
-            Bucket: settings.shramba_bucket_name,
+            Bucket: settings.bucket_name,
             Key: key
         };
 
@@ -817,7 +817,7 @@ export async function getEC() {
 
             let params = {
                 Body: "",
-                Bucket: settings.shramba_bucket_name,
+                Bucket: settings.bucket_name,
                 Key: input
             };
 
@@ -856,8 +856,8 @@ export async function getEC() {
     });
 
     async function loginSuccess(access_key, secret_key) {
-        sessionStorage.setItem('shramba-access-key', access_key);
-        sessionStorage.setItem('shramba-secret-key', secret_key);
+        sessionStorage.setItem('storage-access-key', access_key);
+        sessionStorage.setItem('storage-secret-key', secret_key);
 
         getEC();
 
@@ -894,7 +894,7 @@ export async function getEC() {
             for (let i = 0; i < Buckets.length; i++) {
                 let name = Buckets[i]['Name'];
 
-                if (name === settings.shramba_bucket_name) {
+                if (name === settings.bucket_name) {
                     arnes_bucket_exists = true;
                     break;
                 }
@@ -902,7 +902,7 @@ export async function getEC() {
 
             if (!arnes_bucket_exists) {
                 let params = {
-                    Bucket: settings.shramba_bucket_name,
+                    Bucket: settings.bucket_name,
                     CreateBucketConfiguration: {
                         LocationConstraint: "default"
                     }
@@ -911,7 +911,7 @@ export async function getEC() {
                 debug(`bucket arnes-shramba does not exists, so we'll create one`)
 
                 const command = new CreateBucketCommand({
-                    Bucket: settings.shramba_bucket_name,
+                    Bucket: settings.bucket_name,
                 });
 
                 try {
@@ -938,9 +938,9 @@ export async function getEC() {
 
     $("#logout").on("click", function () {
         s3client = null;
-        sessionStorage.setItem('shramba-access-key', '');
-        sessionStorage.setItem('shramba-secret-key', '');
-        sessionStorage.setItem('shramba-ec', '');
+        sessionStorage.setItem('storage-access-key', '');
+        sessionStorage.setItem('storage-secret-key', '');
+        sessionStorage.setItem('storage-ec', '');
 
         $("#main").hide();
         $("#login-modal").show();
@@ -953,8 +953,8 @@ export async function getEC() {
             console.log("clicked share object");
         }
 
-        let access_key = sessionStorage.getItem('shramba-access-key');
-        let secret_key = sessionStorage.getItem('shramba-secret-key');
+        let access_key = sessionStorage.getItem('storage-access-key');
+        let secret_key = sessionStorage.getItem('storage-secret-key');
 
         if (!(access_key || secret_key)) {
             console.log("no access key, no secret key")
@@ -984,7 +984,7 @@ export async function getEC() {
                 console.log(key);
                 console.log(data.download_key);
             }
-            // $("button.share-object").find(`[data-key='${key}']`).attr("data-download-key", data.download_key).addClass("shared");
+
             $("button[data-key='" + key + "']").addClass("shared");
             $("button[data-key='" + key + "']").attr("data-download-key", data.download_key);
         });
@@ -995,8 +995,8 @@ export async function getEC() {
             console.log("clicked share document object");
         }
 
-        let access_key = sessionStorage.getItem('shramba-access-key');
-        let secret_key = sessionStorage.getItem('shramba-secret-key');
+        let access_key = sessionStorage.getItem('storage-access-key');
+        let secret_key = sessionStorage.getItem('storage-secret-key');
 
         if (!(access_key || secret_key)) {
             console.log("no access key, no secret key")
@@ -1052,8 +1052,8 @@ export async function getEC() {
             console.log("clicked unshare object");
         }
 
-        let access_key = sessionStorage.getItem('shramba-access-key');
-        let secret_key = sessionStorage.getItem('shramba-secret-key');
+        let access_key = sessionStorage.getItem('storage-access-key');
+        let secret_key = sessionStorage.getItem('storage-secret-key');
         let key = $(this).attr("data-key");
 
         if (!(access_key || secret_key)) {
@@ -1141,7 +1141,7 @@ export async function getEC() {
         let del = confirm("Ali res želiš izbrisati datoteko " + key + "?");
         if (del) {
             let params = {
-                Bucket: settings.shramba_bucket_name,
+                Bucket: settings.bucket_name,
                 Key: key
             };
 
@@ -1152,8 +1152,8 @@ export async function getEC() {
                 if (response && response['$metadata']['httpStatusCode'] == 204) {
                     debug(`deleted object ${key}`);
 
-                    let access_key = sessionStorage.getItem('shramba-access-key');
-                    let secret_key = sessionStorage.getItem('shramba-secret-key');
+                    let access_key = sessionStorage.getItem('storage-access-key');
+                    let secret_key = sessionStorage.getItem('storage-secret-key');
 
                     if (!(access_key || secret_key)) {
                         console.log("no access key, no secret key")
