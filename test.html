@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>HTML 5 Boilerplate</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="js/vendor/jquery-3.6.0.min.js"></script>
+    <script>
+        function htmlFromTemplate(selector, replace) {
+    let template = $(selector).clone();
+    console.log(template);
+}
+        alert('hi');
+    </script>
+</head>
+<body>
+<template id="action-buttons-template">
+    <span class="action-buttons">
+        <button class="btn share-object invisible"><i class="fa fa-share-alt"></i></button>
+        <button class="btn download-object invisible" data-key=""><i class="fa fa-download"></i></button>
+        <button class="btn delete-folder delete-object" data-key="{{REPLACE}}"><i class="fa fa-trash"></i></button>
+    </span>
+</template>
+</body>
+</html>

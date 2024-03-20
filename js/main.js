@@ -1,8 +1,22 @@
 import * as settings from "./settings.js?1";
 
+/*
+function gets template from index.html with selector and replaces search
+patterns with replaced ones.
+ */
+function htmlFromTemplate(selector, replace = []) {
+    let template = $(selector).clone();
+    let html = template.html();
+    for (let i in replace) {
+        html = html.replaceAll(replace[i]['search'], replace[i]['replace']);
+    }
+
+    return html;
+}
+
 function parent(path) {
     if (path.endsWith('/')) {
-        path = path.substring(0, path.length-2);
+        path = path.substring(0, path.length - 2);
     }
 
     if (path.lastIndexOf('/') == -1) {
@@ -73,7 +87,9 @@ export function login() {
                 }
             });
 
-            getEC();
+            if (settings.plugins.includes("onlyoffice")) {
+                getEC();
+            }
 
             return s3client;
         } catch (e) {
@@ -425,10 +441,6 @@ export async function getEC() {
             }
         }
 
-        if (key == "testrok/" && !ret) {
-            console.log(key + " does not have children");
-        }
-
         return ret;
     }
 
@@ -500,13 +512,11 @@ export async function getEC() {
         try {
             let isTruncated = true;
 
-            console.log("Your bucket contains the following objects:\n");
-            let contents = "";
-
             while (isTruncated) {
                 const {Contents, IsTruncated, NextContinuationToken} =
                     await s3client.send(command);
-                Contents.map((c) => allObjects.push(c));
+
+                Contents?.map((c) => allObjects.push(c));
                 isTruncated = IsTruncated;
                 command.input.ContinuationToken = NextContinuationToken;
             }
@@ -560,12 +570,12 @@ export async function getEC() {
 
             try {
                 // we send current objects so we do not traverse through all
-                const sharedObjects = await getSharedObjects();
+                let sharedObjects = [];
+                if (settings.plugins.includes("sharing")) {
+                    sharedObjects = await getSharedObjects();
+                }
 
                 for (let i = 0; i < allObjects.length; i++) {
-                    if (settings.debug == true) {
-                        console.log(allObjects[i]);
-                    }
                     let key = allObjects[i]['Key'];
                     let size = allObjects[i]['Size'];
                     let last_modified = allObjects[i]['LastModified'];
@@ -580,13 +590,17 @@ export async function getEC() {
 
                     let tmp_key = key.replace(prefix, "");
 
-                    // this should be rewritten maybe
                     if (isFolder(key)) {
                         if (objectDepth(tmp_key) == 1) {
                             let hc = hasChildren(key, allObjects);
-                            let del = hc == false ? '<span class="action-buttons"><button class="btn share-object invisible"><i class="fa fa-share-alt"></i></button><button class="btn download-object invisible" data-key=""><i class="fa fa-download"></i></button><button class="btn delete-folder delete-object" data-key="' + key + '"><i class="fa fa-trash"></i></button></span>' : "&nbsp;";
+                            let del_html = hc == false ? htmlFromTemplate("#action-buttons-template", [{'search': '{{key}}', 'replace': key}]) : "&nbsp;";
                             let folder_name = tmp_key.slice(0, tmp_key.length - 1);
-                            let folder_html = '<tr><td class="list-object folder" data-key="' + key + '"><i class="fa fa-folder arnes-folder"></i>&nbsp;' + folder_name + '</td><td>&nbsp;</td><td><span class="last-modified">' + last_modified + '</span></td><td>' + del + '</td></tr>';
+                            let folder_html = htmlFromTemplate("#list-folder-template", [
+                                {'search': '{{key}}', 'replace': key},
+                                {'search': '{{folder_name}}', 'replace': folder_name},
+                                {'search': '{{last_modified}}', 'replace': last_modified},
+                                {'search': '{{del_html}}', 'replace': del_html}
+                            ]);
                             let folder = {
                                 key: key,
                                 folder_name: folder_name,
@@ -616,17 +630,37 @@ export async function getEC() {
                             let is_editable = '';
 
                             if (documentType != null) {
-                                edit_object = '<button class="btn edit-object" data-key="' + key + '" data-title="' + object_name + '" data-etag="' + etag + '"><i class="fa fa-thin fa-pencil"></i></button>';
+                                edit_object = htmlFromTemplate("#edit-object-template", [
+                                    {'search': '{{key}}', 'replace': key},
+                                    {'search': '{{object_name}}', 'replace': object_name},
+                                    {'search': '{{etag}}', 'replace': etag}
+                                ]);
                                 is_editable = 'is_editable';
                             } else {
-                                edit_object = '<button class="btn"><i class="fa fa-thin"></i></button>';
+                                edit_object = htmlFromTemplate("#empty-edit-object-template", []);
                             }
 
-                            html = html + '<tr><td class="list-object" data-key="' + key + '"><span class="object-name">' + object_name + '</span><span class="for-mobile"><span class="object-size">Velikost ' + formatBytes(size) + '</span><br /><span class="last-modified">Spremenjeno ' + last_modified + '</span></span></td><td><span class="object-size">' + formatBytes(size) + '</span></td><td><span class="last-modified">' + last_modified + '</span></td><td><span class="action-buttons">' + edit_object + '<button class="btn share-object ' + is_shared + ' ' + is_editable + '" data-key="' + key + '" data-download-key="' + download_key + '" data-acl="' + acl + '" data-type="' + type + '"><i class="fa fa-share-alt"></i></button><button class="btn download-object" data-key="' + key + '"><i class="fa fa-download"></i></button><button class="btn delete-object" data-key="' + key + '"><i class="fa fa-trash"></i></button></span></td></tr>';
+                            html = html + htmlFromTemplate("#list-object-template", [
+                                {'search': '{{key}}', 'replace': key},
+                                {'search': '{{object_name}}', 'replace': object_name},
+                                {'search': '{{size}}', 'replace': formatBytes(size)},
+                                {'search': '{{last_modified}}', 'replace': last_modified},
+                                {'search': '{{edit_object}}', 'replace': edit_object},
+                                {'search': '{{is_shared}}', 'replace': is_shared},
+                                {'search': '{{is_editable}}', 'replace': is_editable},
+                                {'search': '{{download_key}}', 'replace': download_key},
+                                {'search': '{{acl}}', 'replace': acl},
+                                {'search': '{{type}}', 'replace': type}
+                            ]);
                         } else {
                             let splitted = tmp_key.split("/");
                             let folder_name = splitted[0];
-                            let folder_html = '<tr><td class="list-object folder" data-key="' + (prefix ? prefix : "") + folder_name + '/"><i class="fa fa-folder arnes-folder"></i>&nbsp;' + folder_name + '</td><td>&nbsp;</td><td><span class="last-modified">' + last_modified + '</span></td><td>&nbsp;</td></tr>';
+                            let folder_html = htmlFromTemplate("#list-folder-template", [
+                                {'search': '{{key}}', 'replace': (prefix ? prefix : "") + folder_name + "/"},
+                                {'search': '{{folder_name}}', 'replace': "&nbsp;" + folder_name},
+                                {'search': '{{last_modified}}', 'replace': last_modified},
+                                {'search': '{{del_html}}', 'replace': '&nbsp;'}
+                            ]);
                             let folder = {
                                 key: key,
                                 folder_name: folder_name,
@@ -664,14 +698,15 @@ export async function getEC() {
     function updateNavigation() {
         let html = '<span class="item" data-key="">Moja shramba</span>';
         let folders = (selectedFolder === undefined) ? [] : selectedFolder.split("/");
-        let svg = '      <svg className=" a-s-fa-Ha-pa" width="24px" height="24px" viewBox="0 0 24 24" focusable="false" fill="#000000">' +
-            '        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>' +
-            '      </svg>';
+        let svg = htmlFromTemplate("#right-arrow-template");
         let current_folder = '';
 
         for (let i = 0; i < folders.length - 1; i++) {
             current_folder += folders[i] + "/";
-            html = html + svg + '<span class="item" data-key="' + current_folder + '">' + folders[i] + '</span>';
+            html = html + svg + htmlFromTemplate("#navigation-item-template", [
+                {'search': '{{current_folder}}', 'replace': current_folder},
+                {'search': '{{folder_object}}', 'replace': folders[i]}
+            ]);
         }
 
         $(".navigation").html(html);
@@ -859,7 +894,9 @@ export async function getEC() {
         sessionStorage.setItem('storage-access-key', access_key);
         sessionStorage.setItem('storage-secret-key', secret_key);
 
-        getEC();
+        if (settings.plugins.includes("onlyoffice")) {
+            getEC();
+        }
 
         $("#login-modal").hide();
         $("#login-modal-content .login-errors").hide();
@@ -889,18 +926,18 @@ export async function getEC() {
 
         try {
             const {Owner, Buckets} = await s3client.send(command);
-            let arnes_bucket_exists = false;
+            let bucket_exists = false;
 
             for (let i = 0; i < Buckets.length; i++) {
                 let name = Buckets[i]['Name'];
 
                 if (name === settings.bucket_name) {
-                    arnes_bucket_exists = true;
+                    bucket_exists = true;
                     break;
                 }
             }
 
-            if (!arnes_bucket_exists) {
+            if (!bucket_exists) {
                 let params = {
                     Bucket: settings.bucket_name,
                     CreateBucketConfiguration: {
@@ -908,15 +945,15 @@ export async function getEC() {
                     }
                 };
 
-                debug(`bucket arnes-shramba does not exists, so we'll create one`)
+                debug(`bucket ${settings.bucket_name} does not exists, so we'll create one`);
 
-                const command = new CreateBucketCommand({
+                const command = new aws_client_s3.CreateBucketCommand({
                     Bucket: settings.bucket_name,
                 });
 
                 try {
                     const {Location} = await s3client.send(command);
-                    console.log(`Bucket created with location ${Location}`);
+                    console.log(`bucket created with location ${Location}`);
                 } catch (err) {
                     console.error(err);
                 }
@@ -1169,7 +1206,7 @@ export async function getEC() {
                     };
 
                     $.ajax({
-                        url: "/spletni-vmesnik/unshare/",
+                        url: settings.urls["unshare"],
                         method: "POST",
                         data: params,
                         success: function (data) {
