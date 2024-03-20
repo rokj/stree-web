@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="">
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta property="og:title" content="">
+    <meta property="og:type" content="">
+    <meta property="og:url" content="">
+    <meta property="og:image" content="">
+
+    <link rel="icon" type="image/png" href="favicon.ico"/>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <meta name="theme-color" content="#fafafa">
+</head>
+
+<body>
+<div id="login-modal">
+    <div id="login-modal-content" class="selected no-navbar" role="main">
+        <!-- <img src="img/logo.svg" data-src-small="0" id="logo" alt="Logo"> -->
+        <h1 id="logo">Shramba</h1>
+        <div id="login-form" name="login-form" method="post" class="propform" action="">
+            <table>
+                <tbody>
+                <tr class="form-group row">
+                    <td class="title" style="display: none;"><label for="access-key">Access key</label></td>
+                    <td class="input input-group input-group-lg"><span class="input-group-prepend"></span><input
+                            name="access-key" id="access-key" required="" size="40" class="form-control"
+                            autocapitalize="none" autocomplete="off" type="text" placeholder="Access key"></td>
+                </tr>
+                <tr class="form-group row">
+                    <td class="title" style="display: none;"><label for="secret-access-key">Secret access key</label>
+                    </td>
+                    <td class="input input-group input-group-lg"><span class="input-group-prepend"></span><input
+                            name="secrect-access-key" id="secret-access-key" required="" size="40" class="form-control"
+                            autocapitalize="none" autocomplete="off" type="password" placeholder="Secret access key">
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <p class="formbuttons">
+                <button type="button" id="login-submit"
+                        class="button mainaction submit btn btn-primary btn-lg text-uppercase w-100">Prijava
+                </button>
+            </p>
+
+            <p class="login-errors">Prijava ni uspela. Preverite Access key in Secret access key.</p>
+
+            <div id="login-footer" role="contentinfo"></div>
+        </div>
+    </div>
+</div>
+
+<div id="main">
+    <div id="add"><i class="fa fa-plus" aria-hidden="true"></i></div>
+
+    <div id="action-buttons">
+        <!-- Add your site or application content here -->
+        <button id="new-folder" type="button" class="btn arnes-button arnes-new-map"><i class="fa fa-folder" aria-hidden="true"></i>Nova mapa</button>
+        <button id="file-upload" type="button" class="btn arnes-button arnes-file-upload"><i class="fa fa-upload" aria-hidden="true"></i>Naloži datoteko</button>
+        <button id="folder-upload" type="button" class="btn arnes-button arnes-file-upload"><i class="fa fa-upload" aria-hidden="true"></i>Naloži mapo</button>
+        <button id="logout" type="button" class="btn arnes-button arnes-logut"><i class="fa fa-sign-out" aria-hidden="true"></i>Odjava</button>
+    </div>
+
+    <input type="file" id="file" name="file[]" multiple/>
+    <input type="file" id="folder" name="folder[]" multiple webkitdirectory directory/>
+
+    <div class="navigation">
+        <span class="item" data-key="">Moja shramba</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+            <tr>
+                <th scope="col">Ime</th>
+                <th scope="col">Velikost</th>
+                <th scope="col">Zadnja sprememba</th>
+                <th scope="col">&nbsp;</th>
+            </tr>
+            </thead>
+            <tbody class="data">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="progress-bar-modal">
+    <div id="progress-bar-modal-content">
+        <div class="light-arnes-color">
+            <div id="progress-bar" class="arnes-color" style="height:24px;width:0%"></div>
+            <div id="percent"></div>
+            <div id="nr-files"></div>
+        </div>
+    </div>
+</div>
+
+<div id="loader-modal">
+    <div id="loader"></div>
+</div>
+
+<div id="share-modal">
+    <div id="share-modal-content">
+        <div class="light-arnes-color"><textarea id="shared-link" readonly="" value=""></textarea></div>
+        <div id="unshare-text">Želit izbrisati deljeno povezavo?<button id="unshare" class="btn button arnes-button">Da</button></div>
+        <button id="close-share-modal" class="btn arnes-button">X</button>
+    </div>
+</div>
+
+<div id="read-write-share-modal">
+    <div id="read-write-share-modal-content" class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Datoteko, ki se lahko ureja preko brskalnika, lahko delite na naslednje načine</h5>
+            <button id="close-read-write-share-modal" type="button" class="close arnes-button btn" data-dismiss="modal"
+                    aria-label="Close">
+                <span aria-hidden="true">X</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="shown-key-modal"><strong>Datoteka:</strong> <span id="shown-key"></span></div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="share-read"/>
+                <label class="form-check-label" for="share-read">deli za vpogled</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="share-read-write"/>
+                <label class="form-check-label" for="share-read-write">deli za urejanje</label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <textarea id="read-write-shared-link" readonly="" value=""></textarea>
+            <button id="save-read-write-share" type="button" class="btn arnes-button">Shrani</button>
+        </div>
+    </div>
+</div>
+
+<div id="placeholder"></div>
+
+<template id="action-buttons-template">
+    <span class="action-buttons">
+        <button class="btn share-object invisible"><i class="fa fa-share-alt"></i></button>
+        <button class="btn download-object invisible" data-key=""><i class="fa fa-download"></i></button>
+        <button class="btn delete-folder delete-object" data-key="{{key}}"><i class="fa fa-trash"></i></button>
+    </span>
+</template>
+
+<template id="list-folder-template">
+    <tr>
+        <td class="list-object folder" data-key="{{key}}"><i class="fa fa-folder arnes-folder"></i>&nbsp;{{folder_name}}</td>
+        <td>&nbsp;</td>
+        <td><span class="last-modified">{{last_modified}}</span></td><td>{{del_html}}</td>
+    </tr>
+</template>
+
+<template id="list-object-template">
+    <tr>
+        <td class="list-object" data-key="{{key}}"><span class="object-name">{{object_name}}</span><span class="for-mobile"><span class="object-size">Velikost {{size}}</span><br /><span class="last-modified">Spremenjeno {{last_modified}}</span></span></td>
+        <td><span class="object-size">{{size}}</span></td>
+        <td><span class="last-modified">{{last_modified}}</span></td>
+        <td><span class="action-buttons">{{edit_object}}<button class="btn share-object {{is_shared}} {{is_editable}}" data-key="{{key}}" data-download-key="{{download_key}}" data-acl="{{acl}}" data-type="{{type}}"><i class="fa fa-share-alt"></i></button><button class="btn download-object" data-key="{{key}}"><i class="fa fa-download"></i></button><button class="btn delete-object" data-key="{{key}}"><i class="fa fa-trash"></i></button></span></td>
+    </tr>
+</template>
+
+<template id="edit-object-template">
+    <button class="btn edit-object" data-key="{{key}}" data-title="{{object_name}}" data-etag="{{etag}}"><i class="fa fa-thin fa-pencil"></i></button>
+</template>
+
+<template id="empty-edit-object-template">
+    <button class="btn"><i class="fa fa-thin"></i></button>
+</template>
+
+<template id="navigation-item-template">
+    <span class="item" data-key="{{current_folder}}">{{folder_object}}</span>
+</template>
+
+<template id="right-arrow-template">
+    <svg className=" a-s-fa-Ha-pa" width="24px" height="24px" viewBox="0 0 24 24" focusable="false" fill="#000000">
+        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+    </svg>
+</template>
+
+<noscript>
+    <p class="noscriptwarning">Opozorilo: Ta spletna stran zahteva Javascript! Za uporabo ga vključite v nastavitvah
+        vašega brskalnika.</p>
+</noscript>
+
+<script src="js/vendor/bootstrap.min.js"></script>
+<script src="js/vendor/jquery-3.6.0.min.js"></script>
+<script type="module" src="js/vendor/aws-sdk-bundle.js?1"></script>
+
+<script src="js/plugins.js?1"></script>
+<script type="module" src="js/main.js?1"></script>
+</body>
+
+</html>

@@ -8,11 +8,17 @@
     <link rel="stylesheet" href="style.css">
     <script src="js/vendor/jquery-3.6.0.min.js"></script>
     <script>
-        function htmlFromTemplate(selector, replace) {
-    let template = $(selector).clone();
-    console.log(template);
-}
-        alert('hi');
+        $(document).ready(function() {
+            function htmlFromTemplate(selector, replace) {
+                let template = $(selector).clone();
+                let html = template.html();
+                for (let i in replace) {
+                    html = html.replace(replace[i]['search'], replace[i]['replace']);
+                }
+            }
+
+            htmlFromTemplate("#action-buttons-template", [{'search': '{{REPLACE}}', 'replace': 'fafafa'}]);
+        });
     </script>
 </head>
 <body>
