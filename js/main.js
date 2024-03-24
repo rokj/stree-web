@@ -42,6 +42,51 @@ function debug(msg) {
     }
 }
 
+const oneMB = 1024 * 1024;
+
+export const getObjectRange = ({ s3client, bucket, key, start, end }) => {
+  const command = new aws_client_s3.GetObjectCommand({
+    Bucket: bucket,
+    Key: key,
+    Range: `bytes=${start}-${end}`,
+  });
+
+  return s3client.send(command);
+};
+
+export const getRangeAndLength = (contentRange) => {
+  const [range, length] = contentRange.split("/");
+  const [start, end] = range.split("-");
+  return {
+    start: parseInt(start),
+    end: parseInt(end),
+    length: parseInt(length),
+  };
+};
+
+export const isComplete = ({ end, length }) => end === length - 1;
+
+const downloadInChunks = async ({ s3client, bucket, key }) => {
+  let rangeAndLength = { start: -1, end: -1, length: -1 };
+
+  while (!isComplete(rangeAndLength)) {
+    const { end } = rangeAndLength;
+    const nextRange = { start: end + 1, end: end + oneMB };
+
+    debug(`downloading bytes ${nextRange.start} to ${nextRange.end}`);
+
+    const { ContentRange, Body } = await getObjectRange({
+      s3client,
+      bucket,
+      key,
+      ...nextRange,
+    });
+
+    writeStream.write(await Body.transformToByteArray());
+    rangeAndLength = getRangeAndLength(ContentRange);
+  }
+};
+
 export function getUrlParam(param) {
     let url_string = window.location.href;
     let url = new URL(url_string);
@@ -626,8 +671,12 @@ export async function getEC() {
                             let object_name = key.replace(prefix, "");
                             let edit_object = '';
                             let fileType = fileExtension(key);
-                            let documentType = getDocumentType(fileType);
+                            let documentType = null;
                             let is_editable = '';
+
+                            if (settings.plugins.includes("onlyoffice")) {
+                                documentType = getDocumentType(fileType);
+                            }
 
                             if (documentType != null) {
                                 edit_object = htmlFromTemplate("#edit-object-template", [
@@ -805,38 +854,46 @@ export async function getEC() {
         debug(response);
     }
 
-    $("body").on("click", '.download-object', function () {
+    $("body").on("click", '.download-object', async function () {
         let key = $(this).attr("data-key");
         let params = {
             Bucket: settings.bucket_name,
             Key: key
         };
+        const command = new aws_client_s3.GetObjectCommand(params);
+
+        debug(`will download object with params ${JSON.stringify(params)}`);
+        
 
         $("#progress-bar").css("width", "0%");
         $("#percent").text("");
 
         $("#progress-bar-modal").show();
-        s3client.getObject(params, function (err, data) {
-            if (err) console.log(err, err.stack); // an error occurred
-            // else     console.log(data);           // successful response
 
-            $("#progress-bar-modal").hide();
-            let blob = new Blob([data.Body], {type: data.ContentType});
-            let link = document.createElement('a');
-            let filename = key.replace(selectedFolder, "");
-            link.href = window.URL.createObjectURL(blob);
-            link.download = filename;
-            link.click();
+        const response = await s3client.send(command);
+        console.log(response);
+        const byteArray = await response.Body.transformToByteArray();
 
-            // TODO: revokeObjectURL
-            window.URL.revokeObjectURL(link);
-        }).on('httpDownloadProgress', ({loaded, total}) => {
-            let percent = `${Math.round(100 * loaded / total)}%`;
-            $("#progress-bar").css("width", percent);
-            $("#percent").text(percent);
+        let blob = new Blob([byteArray], {type: response.ContentType});
+        let link = document.createElement('a');
+        let filename = key.replace(selectedFolder, "");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
 
-            // console.log('Progress:', loaded, '/', total, percent);
+        window.URL.revokeObjectURL(link);
+
+        /*
+        let progress = 0;
+
+        await downloadInChunks({
+            s3client: s3client,
+            bucket: settings.bucket_name,
+            key: key,
         });
+        */
+
+        $("#progress-bar-modal").hide();
     });
 
     $("#new-folder").on("click", function () {
