@@ -323,40 +323,24 @@ export async function getEC() {
                 Body: file,
             };
 
+            $("#progress-bar").css("width", "0%");
+            $("#progress-bar-modal").show();
+
             // s3.putObject(params, function (err, data) {
-            let options = {
-                partSize: 100 * 1024 * 1024,
-                queueSize: 1
-            };
+            var options = {partSize: 100 * 1024 * 1024, queueSize: 1};
+            s3client.upload(params, options, function(err, data) {
+                if (err) {
+                    console.log(err, err.stack);
+                    return;
+                }
 
-            try {
-                const parallelUploads3 = new aws_lib_storage.Upload({
-                    client: s3client,
-                    // tags: [...], // optional tags
-                    queueSize: 1, // optional concurrency configuration
-                    leavePartsOnError: false, // optional manually handle dropped parts
-                    params: params,
-                });
-
-                parallelUploads3.on("httpUploadProgress", ({loaded, total}) => {
-                    let percent = `${Math.round(100 * loaded / total)}%`;
-                    $("#progress-bar").css("width", percent);
-                    $("#percent").text(percent);
-                });
-
-                parallelUploads3.done().then(
-                    (data) => {
-                        debug("uploaded file following data");
-                        debug(data);
-
-                        updateVersions(data['Key']);
-                        resolve(data);
-                    },
-                    (error) => reject(error)
-                );
-            } catch (e) {
-                console.log(e);
-            }
+                resolve();
+            }).on('httpUploadProgress', ({ loaded, total }) => {
+                let percent = `${Math.round(100 * loaded / total)}%`;
+                $("#progress-bar").css("width", percent);
+                $("#percent").text(percent);
+                // console.log('Progress:', loaded, '/', total, percent);
+            });
         })
     }
 
@@ -532,25 +516,20 @@ export async function getEC() {
         let marker;
         let allObjects = [];
 
-        const command = new aws_client_s3.ListObjectsV2Command(params);
-
-        try {
-            let isTruncated = true;
-
-            while (isTruncated) {
-                const {Contents, IsTruncated, NextContinuationToken} =
-                    await s3client.send(command);
-
-                Contents?.map((c) => allObjects.push(c));
-                isTruncated = IsTruncated;
-                command.input.ContinuationToken = NextContinuationToken;
-            }
-        } catch (err) {
-            console.error(err);
+        while (isTruncated) {
+          if (marker) params.Marker = marker;
+          const response = await s3client.listObjects(params).promise();
+          response.Contents.forEach(item => {
+            allObjects.push(item);
+          });
+          isTruncated = response.IsTruncated;
+          if (isTruncated) {
+            marker = response.Contents.slice(-1)[0].Key;
+          }
         }
 
         return allObjects;
-    }
+      }
 
     function getSharedObjects() {
         return new Promise(function (resolve, reject) {
@@ -650,11 +629,12 @@ export async function getEC() {
                         if (objectDepth(tmp_key) == 0) {
                             let object_name = key.replace(prefix, "");
                             let edit_object = '';
+                            let share_object = '';
                             let fileType = fileExtension(key);
                             let documentType = getDocumentType(fileType);
                             let is_editable = '';
 
-                            if (documentType != null) {
+                            if (settings.plugins.includes("onlyoffice") && documentType != null) {
                                 edit_object = htmlFromTemplate("#edit-object-template", [
                                     {'search': '{{key}}', 'replace': key},
                                     {'search': '{{object_name}}', 'replace': object_name},
@@ -807,6 +787,7 @@ export async function getEC() {
                 await writableStream.write(await Body.transformToByteArray());
                 rangeAndLength = getRangeAndLength(ContentRange);
             }
+            debugger;
 
             await writableStream.close();
         } catch (err) {
@@ -872,23 +853,36 @@ export async function getEC() {
 
     $("body").on("click", '.download-object', async function () {
         let key = $(this).attr("data-key");
-        const command = new aws_client_s3.GetObjectCommand({
+        let params = {
             Bucket: settings.bucket_name,
             Key: key
-        });
+        };
 
         $("#progress-bar").css("width", "0%");
         $("#percent").text("");
 
         $("#progress-bar-modal").show();
+        s3client.getObject(params, function (err, data) {
+            if (err) console.log(err, err.stack); // an error occurred
+            // else     console.log(data);           // successful response
 
-        await downloadInChunks({
-            s3client: s3client,
-            bucket: settings.bucket_name,
-            key: key,
+            $("#progress-bar-modal").hide();
+            let blob = new Blob([data.Body], {type: data.ContentType});
+            let link = document.createElement('a');
+            let filename = key.replace(selectedFolder, "");
+            link.href = window.URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+
+            // TODO: revokeObjectURL
+            window.URL.revokeObjectURL(link);
+        }).on('httpDownloadProgress', ({loaded, total}) => {
+            let percent = `${Math.round(100 * loaded / total)}%`;
+            $("#progress-bar").css("width", percent);
+            $("#percent").text(percent);
+
+            // console.log('Progress:', loaded, '/', total, percent);
         });
-
-        $("#progress-bar-modal").hide();
     });
 
     $("#new-folder").on("click", function () {
@@ -960,69 +954,51 @@ export async function getEC() {
         let access_key = $("#access-key").val();
         let secret_key = $("#secret-access-key").val();
 
-        s3client = new aws_client_s3.S3Client({
-            region: "us-east-1",
-            credentials: {
-                accessKeyId: access_key,
-                secretAccessKey: secret_key
-            },
-            endpoint: settings.s3_endpoint,
-            forcePathStyle: true, // needed with minio?
-            signatureVersion: 'v4',
-            httpOptions: {
-                timeout: 3600000
-            }
+        s3client = new AWS.S3({
+          accessKeyId: access_key,
+          secretAccessKey: secret_key,
+          endpoint: settings.s3_endpoint,
+          s3ForcePathStyle: true, // needed with minio?
+          signatureVersion: 'v4'
         });
 
-        const command = new aws_client_s3.ListBucketsCommand({});
-
-        try {
-            const {Owner, Buckets} = await s3client.send(command);
-            let bucket_exists = false;
-
-            for (let i = 0; i < Buckets.length; i++) {
-                let name = Buckets[i]['Name'];
-
-                if (name === settings.bucket_name) {
-                    bucket_exists = true;
-                    break;
-                }
-            }
-
-            if (!bucket_exists) {
-                let params = {
-                    Bucket: settings.bucket_name,
-                    CreateBucketConfiguration: {
-                        LocationConstraint: "default"
-                    }
-                };
-
-                debug(`bucket ${settings.bucket_name} does not exists, so we'll create one`);
-
-                const command = new aws_client_s3.CreateBucketCommand({
-                    Bucket: settings.bucket_name,
-                });
-
-                try {
-                    const {Location} = await s3client.send(command);
-                    console.log(`bucket created with location ${Location}`);
-                } catch (err) {
-                    console.error(err);
-                }
-            }
-
-            loginSuccess(access_key, secret_key);
-        } catch (err) {
-            console.error(err);
-
+        s3client.listBuckets(function(err, data) {
+          if (err) {
             if (err && "code" in err && err["code"] === "NetworkingError") {
-                console.log("login failed");
-                $("#login-modal-content .login-errors").show();
+              console.log("login failed");
+              $("#login-modal-content .login-errors").show();
             }
 
             console.log(err);
             return;
-        }
+          }
+
+          let arnes_bucket_exists = false;
+          for (let i = 0; i < data.Buckets.length; i++) {
+            let name = data.Buckets[i]['Name'];
+            // let creation_date = data.Buckets[i]['CreationDate'];
+
+            if (name === settings.bucket_name) {
+              arnes_bucket_exists = true;
+              break;
+            }
+          }
+
+          if (!arnes_bucket_exists) {
+            let params = {
+              Bucket: settings.bucket_name,
+              CreateBucketConfiguration: {
+                LocationConstraint: "default"
+              }
+            };
+            s3.createBucket(params, function(err, data) {
+              if (err) console.log(err, err.stack);
+              else     console.log(data);
+            });
+          }
+
+          loginSuccess(access_key, secret_key);
+        });
     });
 
     $("#logout").on("click", function () {
