@@ -66,26 +66,6 @@ export const getRangeAndLength = (contentRange) => {
 
 export const isComplete = ({ end, length }) => end === length - 1;
 
-const downloadInChunks = async ({ s3client, bucket, key }) => {
-  let rangeAndLength = { start: -1, end: -1, length: -1 };
-
-  while (!isComplete(rangeAndLength)) {
-    const { end } = rangeAndLength;
-    const nextRange = { start: end + 1, end: end + oneMB };
-
-    debug(`downloading bytes ${nextRange.start} to ${nextRange.end}`);
-
-    const { ContentRange, Body } = await getObjectRange({
-      s3client,
-      bucket,
-      key,
-      ...nextRange,
-    });
-
-    writeStream.write(await Body.transformToByteArray());
-    rangeAndLength = getRangeAndLength(ContentRange);
-  }
-};
 
 export function getUrlParam(param) {
     let url_string = window.location.href;
@@ -671,12 +651,8 @@ export async function getEC() {
                             let object_name = key.replace(prefix, "");
                             let edit_object = '';
                             let fileType = fileExtension(key);
-                            let documentType = null;
+                            let documentType = getDocumentType(fileType);
                             let is_editable = '';
-
-                            if (settings.plugins.includes("onlyoffice")) {
-                                documentType = getDocumentType(fileType);
-                            }
 
                             if (documentType != null) {
                                 edit_object = htmlFromTemplate("#edit-object-template", [
@@ -798,6 +774,46 @@ export async function getEC() {
         }
     }
 
+    const downloadInChunks = async ({ s3client, bucket, key }) => {
+        try {
+                /*
+                types: [{
+                  description: 'MYfile',
+                  accept: {'text/plain': ['.txt']},
+                }],
+                */
+            const opts = {
+                suggestedName: key,
+              };
+
+            const fileHandle = await window.showSaveFilePicker(opts);
+            const writableStream = await fileHandle.createWritable();
+
+            let rangeAndLength = { start: -1, end: -1, length: -1 };
+
+            while (!isComplete(rangeAndLength)) {
+                const { end } = rangeAndLength;
+                const nextRange = { start: end + 1, end: end + oneMB };
+
+                debug(`downloading bytes ${nextRange.start} to ${nextRange.end}`);
+
+                const { ContentRange, Body } = await getObjectRange({
+                    s3client,
+                    bucket,
+                    key,
+                    ...nextRange,
+                });
+
+                await writableStream.write(await Body.transformToByteArray());
+                rangeAndLength = getRangeAndLength(ContentRange);
+            }
+
+            await writableStream.close();
+        } catch (err) {
+            console.log(err.name, err.message, err.stack);
+        }
+    };
+
     async function setObjectVersion(key, now = null) {
         debug(`in setObjectVersion`);
         debug(`updating ${settings.stree_version_key} tag of an object ${key}`);
@@ -856,42 +872,21 @@ export async function getEC() {
 
     $("body").on("click", '.download-object', async function () {
         let key = $(this).attr("data-key");
-        let params = {
+        const command = new aws_client_s3.GetObjectCommand({
             Bucket: settings.bucket_name,
             Key: key
-        };
-        const command = new aws_client_s3.GetObjectCommand(params);
-
-        debug(`will download object with params ${JSON.stringify(params)}`);
-        
+        });
 
         $("#progress-bar").css("width", "0%");
         $("#percent").text("");
 
         $("#progress-bar-modal").show();
 
-        const response = await s3client.send(command);
-        console.log(response);
-        const byteArray = await response.Body.transformToByteArray();
-
-        let blob = new Blob([byteArray], {type: response.ContentType});
-        let link = document.createElement('a');
-        let filename = key.replace(selectedFolder, "");
-        link.href = window.URL.createObjectURL(blob);
-        link.download = filename;
-        link.click();
-
-        window.URL.revokeObjectURL(link);
-
-        /*
-        let progress = 0;
-
         await downloadInChunks({
             s3client: s3client,
             bucket: settings.bucket_name,
             key: key,
         });
-        */
 
         $("#progress-bar-modal").hide();
     });
