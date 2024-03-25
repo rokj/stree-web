@@ -168,7 +168,7 @@
         <td class="list-object" data-key="{{key}}"><span class="object-name">{{object_name}}</span><span class="for-mobile"><span class="object-size">Velikost {{size}}</span><br /><span class="last-modified">Spremenjeno {{last_modified}}</span></span></td>
         <td><span class="object-size">{{size}}</span></td>
         <td><span class="last-modified">{{last_modified}}</span></td>
-        <td><span class="action-buttons">{{edit_object}}<button class="btn share-object {{is_shared}} {{is_editable}}" data-key="{{key}}" data-download-key="{{download_key}}" data-acl="{{acl}}" data-type="{{type}}"><i class="fa fa-share-alt"></i></button><button class="btn download-object" data-key="{{key}}"><i class="fa fa-download"></i></button><button class="btn delete-object" data-key="{{key}}"><i class="fa fa-trash"></i></button></span></td>
+        <td><span class="action-buttons">{{edit_object}}{{share_object}}<button class="btn download-object" data-key="{{key}}"><i class="fa fa-download"></i></button><button class="btn delete-object" data-key="{{key}}"><i class="fa fa-trash"></i></button></span></td>
     </tr>
 </template>
 
@@ -178,6 +178,10 @@
 
 <template id="empty-edit-object-template">
     <button class="btn"><i class="fa fa-thin"></i></button>
+</template>
+
+<template id="share-object-template">
+    <button class="btn share-object {{is_shared}}" data-key="{{key}}" data-download-key="{{download_key}}" data-acl="{{acl}}" data-type="{{type}}"><i class="fa fa-share-alt"></i></button>
 </template>
 
 <template id="navigation-item-template">
@@ -197,7 +201,7 @@
 
 <script src="js/vendor/bootstrap.min.js"></script>
 <script src="js/vendor/jquery-3.6.0.min.js"></script>
-<script type="module" src="js/vendor/aws-sdk-bundle.js?1"></script>
+<script src="js/vendor/aws-sdk-2.1584.0.min.js"></script>
 
 <script src="js/plugins.js?1"></script>
 <script type="module" src="js/main.js?1"></script>

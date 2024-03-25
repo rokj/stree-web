@@ -42,31 +42,6 @@ function debug(msg) {
     }
 }
 
-const oneMB = 1024 * 1024;
-
-export const getObjectRange = ({ s3client, bucket, key, start, end }) => {
-  const command = new aws_client_s3.GetObjectCommand({
-    Bucket: bucket,
-    Key: key,
-    Range: `bytes=${start}-${end}`,
-  });
-
-  return s3client.send(command);
-};
-
-export const getRangeAndLength = (contentRange) => {
-  const [range, length] = contentRange.split("/");
-  const [start, end] = range.split("-");
-  return {
-    start: parseInt(start),
-    end: parseInt(end),
-    length: parseInt(length),
-  };
-};
-
-export const isComplete = ({ end, length }) => end === length - 1;
-
-
 export function getUrlParam(param) {
     let url_string = window.location.href;
     let url = new URL(url_string);
@@ -88,24 +63,25 @@ export let fileExtension = function (filename) {
 }
 
 export function login() {
+    debug(`in login function`);
+
     let access_key = sessionStorage.getItem('shramba-access-key');
     let secret_key = sessionStorage.getItem('storage-secret-key');
     let s3client = null;
 
     if (!access_key || !secret_key) {
+        debug(`access or secret key empty, returning`);
+
         return null;
     }
 
     if (!s3client && access_key && secret_key) {
         try {
-            s3client = new aws_client_s3.S3Client({
-                region: "us-east-1",
-                credentials: {
-                    accessKeyId: access_key,
-                    secretAccessKey: secret_key
-                },
+            s3client = new AWS.S3({
+                accessKeyId: access_key,
+                secretAccessKey: secret_key,
                 endpoint: settings.s3_endpoint,
-                forcePathStyle: true, // needed with minio?
+                s3ForcePathStyle: true, // needed with minio?
                 signatureVersion: 'v4',
                 httpOptions: {
                     timeout: 3600000
@@ -183,8 +159,7 @@ export async function getEC() {
                 "Bucket": settings.bucket_name,
                 "Key": path
             };
-            const command = new aws_client_s3.HeadObjectCommand(params);
-            const response = await s3client.send(command);
+            const response = await s3client.headObject(command);
 
             debug(`object ${path} does exists`);
 
@@ -211,17 +186,18 @@ export async function getEC() {
             throw new Error(`empty path in createEmptyObject`)
         }
 
-        try {
-            const params = {
-                "Bucket": settings.bucket_name,
-                "Key": path,
-                "Body": ''
-            };
-            const command = new aws_client_s3.PutObjectCommand(params);
-            const response = await s3client.send(command);
-        } catch (e) {
-            debug(e);
-        }
+        const params = {
+            "Bucket": settings.bucket_name,
+            "Key": path,
+            "Body": ''
+        };
+
+        s3client.putObject(params, function (err, data) {
+            if (err) {
+                debug(err.message);
+                return;
+            }
+        });
     }
 
     async function createRemotePaths(path) {
@@ -328,14 +304,14 @@ export async function getEC() {
 
             // s3.putObject(params, function (err, data) {
             var options = {partSize: 100 * 1024 * 1024, queueSize: 1};
-            s3client.upload(params, options, function(err, data) {
+            s3client.upload(params, options, function (err, data) {
                 if (err) {
                     console.log(err, err.stack);
                     return;
                 }
 
                 resolve();
-            }).on('httpUploadProgress', ({ loaded, total }) => {
+            }).on('httpUploadProgress', ({loaded, total}) => {
                 let percent = `${Math.round(100 * loaded / total)}%`;
                 $("#progress-bar").css("width", percent);
                 $("#percent").text(percent);
@@ -517,19 +493,19 @@ export async function getEC() {
         let allObjects = [];
 
         while (isTruncated) {
-          if (marker) params.Marker = marker;
-          const response = await s3client.listObjects(params).promise();
-          response.Contents.forEach(item => {
-            allObjects.push(item);
-          });
-          isTruncated = response.IsTruncated;
-          if (isTruncated) {
-            marker = response.Contents.slice(-1)[0].Key;
-          }
+            if (marker) params.Marker = marker;
+            const response = await s3client.listObjects(params).promise();
+            response.Contents.forEach(item => {
+                allObjects.push(item);
+            });
+            isTruncated = response.IsTruncated;
+            if (isTruncated) {
+                marker = response.Contents.slice(-1)[0].Key;
+            }
         }
 
         return allObjects;
-      }
+    }
 
     function getSharedObjects() {
         return new Promise(function (resolve, reject) {
@@ -597,7 +573,10 @@ export async function getEC() {
                     if (isFolder(key)) {
                         if (objectDepth(tmp_key) == 1) {
                             let hc = hasChildren(key, allObjects);
-                            let del_html = hc == false ? htmlFromTemplate("#action-buttons-template", [{'search': '{{key}}', 'replace': key}]) : "&nbsp;";
+                            let del_html = hc == false ? htmlFromTemplate("#action-buttons-template", [{
+                                'search': '{{key}}',
+                                'replace': key
+                            }]) : "&nbsp;";
                             let folder_name = tmp_key.slice(0, tmp_key.length - 1);
                             let folder_html = htmlFromTemplate("#list-folder-template", [
                                 {'search': '{{key}}', 'replace': key},
@@ -645,12 +624,23 @@ export async function getEC() {
                                 edit_object = htmlFromTemplate("#empty-edit-object-template", []);
                             }
 
+                            if (settings.plugins.includes("sharing")) {
+                                share_object = htmlFromTemplate("#share-object-template", [
+                                    {'search': '{{key}}', 'replace': key},
+                                    {'search': '{{is_shared}}', 'replace': is_shared},
+                                    {'search': '{{download_key}}', 'replace': download_key},
+                                    {'search': '{{acl}}', 'replace': acl},
+                                    {'search': '{{type}}', 'replace': type}
+                                ]);
+                            }
+
                             html = html + htmlFromTemplate("#list-object-template", [
                                 {'search': '{{key}}', 'replace': key},
                                 {'search': '{{object_name}}', 'replace': object_name},
                                 {'search': '{{size}}', 'replace': formatBytes(size)},
                                 {'search': '{{last_modified}}', 'replace': last_modified},
                                 {'search': '{{edit_object}}', 'replace': edit_object},
+                                {'search': '{{share_object}}', 'replace': share_object},
                                 {'search': '{{is_shared}}', 'replace': is_shared},
                                 {'search': '{{is_editable}}', 'replace': is_editable},
                                 {'search': '{{download_key}}', 'replace': download_key},
@@ -754,47 +744,6 @@ export async function getEC() {
         }
     }
 
-    const downloadInChunks = async ({ s3client, bucket, key }) => {
-        try {
-                /*
-                types: [{
-                  description: 'MYfile',
-                  accept: {'text/plain': ['.txt']},
-                }],
-                */
-            const opts = {
-                suggestedName: key,
-              };
-
-            const fileHandle = await window.showSaveFilePicker(opts);
-            const writableStream = await fileHandle.createWritable();
-
-            let rangeAndLength = { start: -1, end: -1, length: -1 };
-
-            while (!isComplete(rangeAndLength)) {
-                const { end } = rangeAndLength;
-                const nextRange = { start: end + 1, end: end + oneMB };
-
-                debug(`downloading bytes ${nextRange.start} to ${nextRange.end}`);
-
-                const { ContentRange, Body } = await getObjectRange({
-                    s3client,
-                    bucket,
-                    key,
-                    ...nextRange,
-                });
-
-                await writableStream.write(await Body.transformToByteArray());
-                rangeAndLength = getRangeAndLength(ContentRange);
-            }
-            debugger;
-
-            await writableStream.close();
-        } catch (err) {
-            console.log(err.name, err.message, err.stack);
-        }
-    };
-
     async function setObjectVersion(key, now = null) {
         debug(`in setObjectVersion`);
         debug(`updating ${settings.stree_version_key} tag of an object ${key}`);
@@ -816,11 +765,11 @@ export async function getEC() {
             }
         };
 
-        const command = new aws_client_s3.PutObjectTaggingCommand(params);
-        const response = await s3client.send(command);
+        s3client.PutObjectTagging(params, function(err, data) {
+           if (err) debug(`${err} ${err.stack}`);
+        });
 
-        debug('got object tag response')
-        debug(response);
+        debug('got object tag response');
     }
 
     async function setBucketVersion(key, now = null) {
@@ -844,11 +793,11 @@ export async function getEC() {
 
         debug(params);
 
-        const command = new aws_client_s3.PutBucketTaggingCommand(params);
-        const response = await s3client.send(command);
+        s3client.PutBucketTagging(params, function(err, data) {
+           if (err) debug(`${err} ${err.stack}`);
+        });
 
-        debug('got bucket tag response')
-        debug(response);
+        debug('got bucket tag response');
     }
 
     $("body").on("click", '.download-object', async function () {
@@ -955,49 +904,49 @@ export async function getEC() {
         let secret_key = $("#secret-access-key").val();
 
         s3client = new AWS.S3({
-          accessKeyId: access_key,
-          secretAccessKey: secret_key,
-          endpoint: settings.s3_endpoint,
-          s3ForcePathStyle: true, // needed with minio?
-          signatureVersion: 'v4'
+            accessKeyId: access_key,
+            secretAccessKey: secret_key,
+            endpoint: settings.s3_endpoint,
+            s3ForcePathStyle: true, // needed with minio?
+            signatureVersion: 'v4'
         });
 
-        s3client.listBuckets(function(err, data) {
-          if (err) {
-            if (err && "code" in err && err["code"] === "NetworkingError") {
-              console.log("login failed");
-              $("#login-modal-content .login-errors").show();
+        s3client.listBuckets(function (err, data) {
+            if (err) {
+                if (err && "code" in err && err["code"] === "NetworkingError") {
+                    console.log("login failed");
+                    $("#login-modal-content .login-errors").show();
+                }
+
+                console.log(err);
+                return;
             }
 
-            console.log(err);
-            return;
-          }
+            let bucket_exists = false;
+            for (let i = 0; i < data.Buckets.length; i++) {
+                let name = data.Buckets[i]['Name'];
+                // let creation_date = data.Buckets[i]['CreationDate'];
 
-          let arnes_bucket_exists = false;
-          for (let i = 0; i < data.Buckets.length; i++) {
-            let name = data.Buckets[i]['Name'];
-            // let creation_date = data.Buckets[i]['CreationDate'];
-
-            if (name === settings.bucket_name) {
-              arnes_bucket_exists = true;
-              break;
+                if (name === settings.bucket_name) {
+                    bucket_exists = true;
+                    break;
+                }
             }
-          }
 
-          if (!arnes_bucket_exists) {
-            let params = {
-              Bucket: settings.bucket_name,
-              CreateBucketConfiguration: {
-                LocationConstraint: "default"
-              }
-            };
-            s3.createBucket(params, function(err, data) {
-              if (err) console.log(err, err.stack);
-              else     console.log(data);
-            });
-          }
+            if (!bucket_exists) {
+                let params = {
+                    Bucket: settings.bucket_name,
+                    CreateBucketConfiguration: {
+                        LocationConstraint: "default"
+                    }
+                };
+                s3client.createBucket(params, function (err, data) {
+                    if (err) console.log(err, err.stack);
+                    else console.log(data);
+                });
+            }
 
-          loginSuccess(access_key, secret_key);
+            loginSuccess(access_key, secret_key);
         });
     });
 
@@ -1210,29 +1159,33 @@ export async function getEC() {
                 Key: key
             };
 
-            try {
-                const command = new aws_client_s3.DeleteObjectCommand(params);
-                const response = await s3client.send(command);
+            s3client.deleteObject(params, function (err, data) {
+                if (err) {
+                    debug(err);
+                    debug(err.stack);
 
-                if (response && response['$metadata']['httpStatusCode'] == 204) {
-                    debug(`deleted object ${key}`);
+                    return;
+                }
 
-                    let access_key = sessionStorage.getItem('storage-access-key');
-                    let secret_key = sessionStorage.getItem('storage-secret-key');
+                debug(`deleted object ${key}`);
 
-                    if (!(access_key || secret_key)) {
-                        console.log("no access key, no secret key")
+                let access_key = sessionStorage.getItem('storage-access-key');
+                let secret_key = sessionStorage.getItem('storage-secret-key');
 
-                        return;
-                    }
+                if (!(access_key || secret_key)) {
+                    console.log("no access key, no secret key")
 
-                    let params = {
-                        access_key: access_key,
-                        secret_key: secret_key,
-                        key: key,
-                        just_delete: true
-                    };
+                    return;
+                }
 
+                let params = {
+                    access_key: access_key,
+                    secret_key: secret_key,
+                    key: key,
+                    just_delete: true
+                };
+
+                if (settings.plugins.includes("sharing")) {
                     $.ajax({
                         url: settings.urls["unshare"],
                         method: "POST",
@@ -1243,13 +1196,12 @@ export async function getEC() {
                             console.log(err);
                         }
                     });
-
-                    updateVersions(parent(key));
                 }
-            } catch (e) {
-                debug(`could not delete object ${key}`);
-                debug(e);
-            }
+
+                listObjects(selectedFolder);
+
+                updateVersions(parent(key));
+            });
         }
     });
 
