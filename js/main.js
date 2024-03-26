@@ -65,7 +65,7 @@ export let fileExtension = function (filename) {
 export function login() {
     debug(`in login function`);
 
-    let access_key = sessionStorage.getItem('shramba-access-key');
+    let access_key = sessionStorage.getItem('storage-access-key');
     let secret_key = sessionStorage.getItem('storage-secret-key');
     let s3client = null;
 
