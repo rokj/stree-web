@@ -47,11 +47,14 @@ async function fetchLanguage(lang) {
     return response.json();
 }
 
-function updateLanguage(language) {
-    const lang = fetchLanguage(language);
+async function updateLanguage(language) {
+    debug(`settings language to ${language}`);
+
+    const lang = await fetchLanguage(language);
 
     document.querySelectorAll('[data-i18n]').forEach(element => {
         const key = element.getAttribute('data-i18n');
+
         element.textContent = lang[key];
         if (element.tagName === "INPUT") {
             element.setAttribute('placeholder', lang[key]);
