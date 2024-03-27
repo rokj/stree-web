@@ -14,5 +14,10 @@
     "share-for-view": "deli za vpogled",
     "share-for-editing": "deli za urejanje",
     "save": "Shrani",
-    "storage": "Shramba"
+    "storage": "Shramba",
+    "my-storage": "Moja shramba",
+    "new-folder": "Nova mapa",
+    "file-upload": "Naloži datoteko",
+    "directory-upload": "Naloži mapo",
+    "sign-out": "Odjava"
 }

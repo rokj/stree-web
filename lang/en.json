@@ -14,5 +14,10 @@
     "share-for-view": "share for view",
     "share-for-editing": "share for editing",
     "save": "Save",
-    "storage": "Storage"
+    "storage": "Storage",
+    "my-storage": "My storage",
+    "new-folder": "New folder",
+    "file-upload": "Upload file",
+    "directory-upload": "Upload directory",
+    "sign-out": "Sign out"
 }

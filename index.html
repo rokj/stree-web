@@ -65,10 +65,10 @@
 
     <div id="action-buttons">
         <!-- Add your site or application content here -->
-        <button id="new-folder" type="button" class="btn arnes-button arnes-new-map"><i class="fa fa-folder" aria-hidden="true"></i>Nova mapa</button>
-        <button id="file-upload" type="button" class="btn arnes-button arnes-file-upload"><i class="fa fa-upload" aria-hidden="true"></i>Naloži datoteko</button>
-        <button id="folder-upload" type="button" class="btn arnes-button arnes-file-upload"><i class="fa fa-upload" aria-hidden="true"></i>Naloži mapo</button>
-        <button id="logout" type="button" class="btn arnes-button arnes-logut"><i class="fa fa-sign-out" aria-hidden="true"></i>Odjava</button>
+        <button id="new-folder" type="button" class="btn action-button new-folder"><i class="fa fa-folder" aria-hidden="true"></i><span data-i18n="new-folder"></span></button>
+        <button id="file-upload" type="button" class="btn action-button file-upload"><i class="fa fa-upload" aria-hidden="true"></i><span data-i18n="file-upload"></span></button>
+        <button id="folder-upload" type="button" class="btn action-button file-upload"><i class="fa fa-upload" aria-hidden="true"></i><span data-i18n="directory-upload"></span></button>
+        <button id="logout" type="button" class="btn action-button logout"><i class="fa fa-sign-out" aria-hidden="true"></i><span data-i18n="sign-out"></span></button>
     </div>
 
     <input type="file" id="file" name="file[]" multiple/>
@@ -96,8 +96,8 @@
 
 <div id="progress-bar-modal">
     <div id="progress-bar-modal-content">
-        <div class="light-arnes-color">
-            <div id="progress-bar" class="arnes-color" style="height:24px;width:0%"></div>
+        <div class="light-color">
+            <div id="progress-bar" class="progress-color" style="height:24px;width:0%"></div>
             <div id="percent"></div>
             <div id="nr-files"></div>
         </div>
@@ -110,9 +110,9 @@
 
 <div id="share-modal">
     <div id="share-modal-content">
-        <div class="light-arnes-color"><textarea id="shared-link" readonly=""></textarea></div>
-        <div id="unshare-text" data-i18n="delete-shared-link"><button id="unshare" class="btn button arnes-button" data-i18n="yes"></button></div>
-        <button id="close-share-modal" class="btn arnes-button">X</button>
+        <div class="light-color"><textarea id="shared-link" readonly=""></textarea></div>
+        <div id="unshare-text" data-i18n="delete-shared-link"><button id="unshare" class="btn button action-button" data-i18n="yes"></button></div>
+        <button id="close-share-modal" class="btn action-button">X</button>
     </div>
 </div>
 
@@ -120,7 +120,7 @@
     <div id="read-write-share-modal-content" class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title" data-i18n="share-document-info"></h5>
-            <button id="close-read-write-share-modal" type="button" class="close arnes-button btn" data-dismiss="modal"
+            <button id="close-read-write-share-modal" type="button" class="close action-button btn" data-dismiss="modal"
                     aria-label="Close">
                 <span aria-hidden="true">X</span>
             </button>
@@ -140,7 +140,7 @@
         </div>
         <div class="modal-footer">
             <textarea id="read-write-shared-link" readonly=""></textarea>
-            <button id="save-read-write-share" type="button" class="btn arnes-button" data-i18n="save"></button>
+            <button id="save-read-write-share" type="button" class="btn action-button" data-i18n="save"></button>
         </div>
     </div>
 </div>
@@ -157,7 +157,7 @@
 
 <template id="list-folder-template">
     <tr>
-        <td class="list-object folder" data-key="{{key}}"><i class="fa fa-folder arnes-folder"></i>&nbsp;{{folder_name}}</td>
+        <td class="list-object folder" data-key="{{key}}"><i class="fa fa-folder"></i>&nbsp;{{folder_name}}</td>
         <td>&nbsp;</td>
         <td><span class="last-modified">{{last_modified}}</span></td><td>{{del_html}}</td>
     </tr>

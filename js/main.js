@@ -47,21 +47,6 @@ async function fetchLanguage(lang) {
     return response.json();
 }
 
-async function updateLanguage(language) {
-    debug(`settings language to ${language}`);
-
-    const lang = await fetchLanguage(language);
-
-    document.querySelectorAll('[data-i18n]').forEach(element => {
-        const key = element.getAttribute('data-i18n');
-
-        element.textContent = lang[key];
-        if (element.tagName === "INPUT") {
-            element.setAttribute('placeholder', lang[key]);
-        }
-    });
-}
-
 export function getUrlParam(param) {
     let url_string = window.location.href;
     let url = new URL(url_string);
@@ -161,14 +146,28 @@ export async function getEC() {
     }
 }
 
-(function () {
+(async function () {
     let s3client = null;
     let selectedFolder = "";
     let shownKey = "";
     let asyncReturn = null;
+    let lang = null;
 
     function currentTimestamp() {
         return new Date().getTime();
+    }
+
+    function updateLanguage(language) {
+        debug(`settings language to ${language}`);
+
+        document.querySelectorAll('[data-i18n]').forEach(element => {
+            const key = element.getAttribute('data-i18n');
+
+            element.textContent = lang[key];
+            if (element.tagName === "INPUT") {
+                element.setAttribute('placeholder', lang[key]);
+            }
+        });
     }
 
     async function objectExists(path) {
@@ -711,7 +710,7 @@ export async function getEC() {
     }
 
     function updateNavigation() {
-        let html = '<span class="item" data-key="">Moja shramba</span>';
+        let html = '<span class="item" data-key="">' + lang["my-storage"] + '</span>';
         let folders = (selectedFolder === undefined) ? [] : selectedFolder.split("/");
         let svg = htmlFromTemplate("#right-arrow-template");
         let current_folder = '';
@@ -933,12 +932,11 @@ export async function getEC() {
 
         s3client.listBuckets(function (err, data) {
             if (err) {
-                if (err && "code" in err && err["code"] === "NetworkingError") {
-                    console.log("login failed");
-                    $("#login-modal-content .login-errors").show();
-                }
+                debug("login failed");
+                debug(err);
 
-                console.log(err);
+                $("#login-modal-content .login-errors").show();
+
                 return;
             }
 
@@ -961,8 +959,8 @@ export async function getEC() {
                     }
                 };
                 s3client.createBucket(params, function (err, data) {
-                    if (err) console.log(err, err.stack);
-                    else console.log(data);
+                    if (err) debug(err);
+                    else debug(data);
                 });
             }
 
@@ -1297,6 +1295,7 @@ export async function getEC() {
         loadPage();
     });
 
+    lang = await fetchLanguage(settings.language);
     updateLanguage(settings.language);
 
     if (!lsTest()) {
