@@ -11,6 +11,8 @@ export let urls = {
         share_document: "/share-document/"
 };
 
+export let language = "en";
+
 
 /*
  todo

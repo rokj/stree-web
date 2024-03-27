@@ -42,6 +42,23 @@ function debug(msg) {
     }
 }
 
+async function fetchLanguage(lang) {
+    const response = await fetch(`lang/${lang}.json`);
+    return response.json();
+}
+
+function updateLanguage(language) {
+    const lang = fetchLanguage(language);
+
+    document.querySelectorAll('[data-i18n]').forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        element.textContent = lang[key];
+        if (element.tagName === "INPUT") {
+            element.setAttribute('placeholder', lang[key]);
+        }
+    });
+}
+
 export function getUrlParam(param) {
     let url_string = window.location.href;
     let url = new URL(url_string);
@@ -1276,6 +1293,8 @@ export async function getEC() {
 
         loadPage();
     });
+
+    updateLanguage(settings.language);
 
     if (!lsTest()) {
         console.log("Local storage not supported. You are probably using old browser and application will not work.");
