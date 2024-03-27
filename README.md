@@ -10,13 +10,13 @@ Currently it only supports:
 
 # Usage with your S3 server?
 1. `git clone https://github.com/rokj/stree-web.git`
-2. Download, start your S3 server (e.g. minio).
+2. Download, configure, start your S3 server (e.g. minio).
 3. Set s3_endpoint in js/settings.js.
 4. Open index.html in your browser with CORS disabled (e.g. `./chrome --disable-web-security --user-data-dir="/home/user/tmp"`)
 
 # Developer notes
 KISS. 
   
-It uses AWS SDK v2 from Amazon. Tried v3, but got stuck with "progress" on file upload. You can check branch `https://github.com/rokj/stree-web/tree/almost-with-v3`.
+It uses Javascript AWS SDK v2 from Amazon. Tried v3, but got stuck with "progress" on file upload. You can check branch `https://github.com/rokj/stree-web/tree/almost-with-v3`.
 
 Work is being done in `js/main.js`. It uses [jquery](https://jquery.com/) for element manipulation in HTML, [bootstrap](https://getbootstrap.com/) for simple web design. Plan is to abolish jquery in the future, ...
