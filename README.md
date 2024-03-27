@@ -1,6 +1,13 @@
 # Stree web - simple S3 client
 Stree web client is simple web client for file management on S3 endpoints, such as Amazon S3, Ceph, Minio, ... 
 
+Currently it only supports:
+- [x] upload
+- [x] download
+- [x] map creation
+- [ ] sharing
+- [ ] editing
+
 # Usage with your S3 server?
 1. `git clone https://github.com/rokj/stree-web.git`
 2. Download, start your S3 server (e.g. minio).
