@@ -1,0 +1,17 @@
+{
+    "access-key": "Access key",
+    "sign-in": "Prijava",
+    "secret-key": "Secret key",
+    "login-failed": "Prijava ni uspela. Preverite Access key in Secret access key.",
+    "web-storage": "Moja shramba",
+    "filename": "Ime",
+    "file-size": "Velikost",
+    "last-datetime-modified": "Zadnja sprememba",
+    "delete-shared-link": "Želit izbrisati deljeno povezavo?",
+    "yes": "Da",
+    "share-document-info": "Datoteko, ki se lahko ureja preko brskalnika, lahko delite na naslednje načine",
+    "share-modal-filename": "<strong>Datoteka:</strong>",
+    "share-for-view": "deli za vpogled",
+    "share-for-editing": "deli za urejanje",
+    "save": "Shrani"
+}

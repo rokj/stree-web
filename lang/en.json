@@ -1,0 +1,17 @@
+{
+    "access-key": "Access key",
+    "sign-in": "Sign in",
+    "secret-key": "Secret key",
+    "login-failed": "Sign in failed. Check Access key and Secret access key.",
+    "web-storage": "My storage",
+    "filename": "Name",
+    "file-size": "Size",
+    "last-datetime-modified": "Last modified",
+    "delete-shared-link": "Do you want to delete shared link?",
+    "yes": "Yes",
+    "share-document-info": "You can share document in the following ways",
+    "share-modal-filename": "<strong>File:</strong>",
+    "share-for-view": "share for view",
+    "share-for-editing": "share for editing",
+    "save": "Save"
+}

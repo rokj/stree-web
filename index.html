@@ -31,17 +31,17 @@
             <table>
                 <tbody>
                 <tr class="form-group row">
-                    <td class="title" style="display: none;"><label for="access-key">Access key</label></td>
+                    <td class="title" style="display: none;"><label for="access-key" data-i18n="access-key"></label></td>
                     <td class="input input-group input-group-lg"><span class="input-group-prepend"></span><input
                             name="access-key" id="access-key" required="" size="40" class="form-control"
-                            autocapitalize="none" autocomplete="off" type="text" placeholder="Access key"></td>
+                            autocapitalize="none" autocomplete="off" type="text" data-i18n="access-key" placeholder=""></td>
                 </tr>
                 <tr class="form-group row">
                     <td class="title" style="display: none;"><label for="secret-access-key">Secret access key</label>
                     </td>
                     <td class="input input-group input-group-lg"><span class="input-group-prepend"></span><input
                             name="secrect-access-key" id="secret-access-key" required="" size="40" class="form-control"
-                            autocapitalize="none" autocomplete="off" type="password" placeholder="Secret access key">
+                            autocapitalize="none" autocomplete="off" type="password" placeholder="" data-i18n="secret-key">
                     </td>
                 </tr>
                 </tbody>
@@ -49,11 +49,11 @@
 
             <p class="formbuttons">
                 <button type="button" id="login-submit"
-                        class="button mainaction submit btn btn-primary btn-lg text-uppercase w-100">Prijava
+                        class="button mainaction submit btn btn-primary btn-lg text-uppercase w-100" data-i18n="sign-in">
                 </button>
             </p>
 
-            <p class="login-errors">Prijava ni uspela. Preverite Access key in Secret access key.</p>
+            <p class="login-errors" data-i18n="login-failed"></p>
 
             <div id="login-footer" role="contentinfo"></div>
         </div>
@@ -75,16 +75,16 @@
     <input type="file" id="folder" name="folder[]" multiple webkitdirectory directory/>
 
     <div class="navigation">
-        <span class="item" data-key="">Moja shramba</span>
+        <span class="item" data-key="" data-i18n="web-storage"></span>
     </div>
 
     <div class="table-responsive">
         <table class="table table-striped table-sm">
             <thead>
             <tr>
-                <th scope="col">Ime</th>
-                <th scope="col">Velikost</th>
-                <th scope="col">Zadnja sprememba</th>
+                <th scope="col" data-i18n="filename"></th>
+                <th scope="col" data-i18n="file-size"></th>
+                <th scope="col" data-i18n="last-datetime-modified"></th>
                 <th scope="col">&nbsp;</th>
             </tr>
             </thead>
@@ -111,7 +111,7 @@
 <div id="share-modal">
     <div id="share-modal-content">
         <div class="light-arnes-color"><textarea id="shared-link" readonly=""></textarea></div>
-        <div id="unshare-text">Želit izbrisati deljeno povezavo?<button id="unshare" class="btn button arnes-button">Da</button></div>
+        <div id="unshare-text" data-i18n="delete-shared-link"><button id="unshare" class="btn button arnes-button" data-i18n="yes"></button></div>
         <button id="close-share-modal" class="btn arnes-button">X</button>
     </div>
 </div>
@@ -119,28 +119,28 @@
 <div id="read-write-share-modal">
     <div id="read-write-share-modal-content" class="modal-content">
         <div class="modal-header">
-            <h5 class="modal-title">Datoteko, ki se lahko ureja preko brskalnika, lahko delite na naslednje načine</h5>
+            <h5 class="modal-title" data-i18n="share-document-info"></h5>
             <button id="close-read-write-share-modal" type="button" class="close arnes-button btn" data-dismiss="modal"
                     aria-label="Close">
                 <span aria-hidden="true">X</span>
             </button>
         </div>
         <div class="modal-body">
-            <div id="shown-key-modal"><strong>Datoteka:</strong> <span id="shown-key"></span></div>
+            <div id="shown-key-modal" data-i18n="share-modal-filename"><span id="shown-key"></span></div>
 
             <div class="form-check">
                 <input class="form-check-input" type="checkbox" value="" id="share-read"/>
-                <label class="form-check-label" for="share-read">deli za vpogled</label>
+                <label class="form-check-label" for="share-read" data-i18n="share-for-view"></label>
             </div>
 
             <div class="form-check">
                 <input class="form-check-input" type="checkbox" value="" id="share-read-write"/>
-                <label class="form-check-label" for="share-read-write">deli za urejanje</label>
+                <label class="form-check-label" for="share-read-write" data-i18n="share-for-editing"></label>
             </div>
         </div>
         <div class="modal-footer">
             <textarea id="read-write-shared-link" readonly=""></textarea>
-            <button id="save-read-write-share" type="button" class="btn arnes-button">Shrani</button>
+            <button id="save-read-write-share" type="button" class="btn arnes-button" data-i18n="save"></button>
         </div>
     </div>
 </div>
@@ -195,8 +195,7 @@
 </template>
 
 <noscript>
-    <p class="noscriptwarning">Opozorilo: Ta spletna stran zahteva Javascript! Za uporabo ga vključite v nastavitvah
-        vašega brskalnika.</p>
+    <p class="noscriptwarning">Warning: this website uses Javascript for proper usage!</p>
 </noscript>
 
 <script src="js/vendor/bootstrap.min.js"></script>
