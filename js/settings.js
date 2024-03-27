@@ -13,7 +13,6 @@ export let urls = {
 
 export let language = "en";
 
-
 /*
  todo
  e.g: export let plugins = ['sharing', 'onlyoffice'];
