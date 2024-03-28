@@ -1,5 +1,5 @@
-# Stree web - simple S3 client
-Stree web client is simple web client for file management on S3 endpoints, such as Amazon S3, Ceph, Minio, ... 
+# Stree web - simple S3 browser client
+Stree web client is simple web/browser client for file management on S3 endpoints, such as Amazon S3, Ceph, Minio, ... 
 
 Currently it only supports:
 - [x] upload single file
