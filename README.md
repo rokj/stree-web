@@ -2,9 +2,13 @@
 Stree web client is simple web client for file management on S3 endpoints, such as Amazon S3, Ceph, Minio, ... 
 
 Currently it only supports:
-- [x] upload
-- [x] download
-- [x] map creation
+- [x] upload single file
+- [x] upload multiple files
+- [x] upload folder
+- [x] download single file
+- [ ] download multiple files
+- [ ] download folder
+- [x] map/folder creation
 - [ ] sharing
 - [ ] editing
 
