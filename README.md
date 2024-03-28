@@ -23,4 +23,9 @@ KISS.
   
 It uses Javascript AWS SDK v2 from Amazon. Tried v3, but got stuck with "progress" on file upload. You can check branch `https://github.com/rokj/stree-web/tree/almost-with-v3`.
 
-Work is being done in `js/main.js`. It uses [jquery](https://jquery.com/) for element manipulation in HTML, [bootstrap](https://getbootstrap.com/) for simple web design. Plan is to abolish jquery in the future, ...
+There are three files to work with:
+- `js/main.js` - logic
+- `css/main.css` - CSS
+- `index.html` - template/design
+
+Additionaly [jquery](https://jquery.com/) is used for element manipulation in HTML, [bootstrap](https://getbootstrap.com/) for CSS-ing. Plan is to abolish jquery in the future, ...
