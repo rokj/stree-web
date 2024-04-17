@@ -25,7 +25,7 @@ Currently it supports:
 # Developer notes
 KISS. 
   
-It uses Javascript AWS SDK v2 from Amazon. Tried v3, but got stuck with "progress" on file upload. You can check branch `https://github.com/rokj/stree-web/tree/almost-with-v3`.
+It uses Javascript AWS SDK v2 from Amazon. Tried v3, but got stuck with "progress" on file upload. You can check out branch `https://github.com/rokj/stree-web/tree/almost-with-v3`.
 
 There are three files to work with:
 - `js/main.js` - logic
