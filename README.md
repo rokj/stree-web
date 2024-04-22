@@ -70,8 +70,8 @@ Based on `access_key` you can get differentiate users shared objects/files.
 }
 ```
 
-`object_key` is usually S3 object key .  
-`download_key` is usually random unique key from which app endpoint can then "resolve" to object. 
+`object_key` is usually S3 object key.  
+`download_key` is usually random unique key from which app endpoint can then "resolve" to object.   
 `type`: is `""` or `"document"`. `"document"` is used only for an onlyoffice integration.  
 `acl`: is `""` or `"none"` or `"readonly"` or `"readwrite"` or `"writeonly"`.
 
