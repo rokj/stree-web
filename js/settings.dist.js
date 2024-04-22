@@ -1,5 +1,3 @@
-import * as settings from "./settings";
-
 export let s3_endpoint = "https://s3_endpoint";
 export let bucket_name = "storage";
 export let app_endpoint = "https://app_endpoint/";
