@@ -33,3 +33,78 @@ There are three files to work with:
 - `index.html` - template/design
 
 Additionaly [jquery](https://jquery.com/) is used for element manipulation in HTML, [bootstrap](https://getbootstrap.com/) for CSS-ing. Plan is to abolish jquery in the future, ...
+
+## Sharing
+
+For sharing to work, you have to implement service with 4 endpoints (customizable and set in settings.js):
+- `/get-user-shares/`
+- `/share/`
+- `/unshare/`
+- `/download/`
+
+### `/get-user-shares/` 
+
+Following json request payload is sent to `/get-user-shares/` endpoint:
+```json
+{
+  'access_key': 'XYZ'
+}
+```
+
+Based on `access_key` you can get differentiate users shared objects/files.
+
+`/get-user-shares/` should return following response:
+```json
+{
+  "object_key1": {
+    "download_key": "unique key which is appended to download url for download operation",
+    "type": "empty string or 'document'", 
+    "acl": "empty string or 'none' or 'readonly' or 'readwrite' or 'writeonly'"
+  },
+  "object_key2": {
+    "download_key": "url_from_where_object_can_be_downloaded",
+    "type": "empty string or 'document'", 
+    "acl": "empty string or 'none' or 'readonly' or 'readwrite' or 'writeonly'"
+  },
+  ...
+}
+```
+
+`object_key` is usually S3 object key .  
+`download_key` is usually random unique key from which app endpoint can then "resolve" to object. 
+`type`: is `""` or `"document"`. `"document"` is used only for an onlyoffice integration.  
+`acl`: is `""` or `"none"` or `"readonly"` or `"readwrite"` or `"writeonly"`.
+
+### `/share/`
+
+todo ...
+
+### `/unshare/`
+
+todo ...
+
+### `/download/`
+GET request example to `/download/` endpoint:
+```
+https://app_endpoint/download/?k=UNIQE_DOWNLOAD_KEY
+```
+
+Based on `k` GET argument, `/download/` endpoint will redirect to a file which can be downloaded.
+
+This is usually redirect to S3 download URL, which in case of CEPH with multi tenant support is constructed something like this:
+```
+1. download_url = "{settings.s3_endpoint}/{tenant}:{bucket}/{object_key}"
+2. redirect to download URL
+ 
+e.g.:
+1. object_key = get_object_key_from_database(GET['k'])
+2. download_url = "https://s3.internet.com/user1:mybucket/{object_key}"
+3. redirect to download_url
+```
+
+## Onlyoffice
+
+...
+## Sharing onlyoffice documents
+
+...

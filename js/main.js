@@ -1011,7 +1011,7 @@ export async function getEC() {
             console.log(data);
             $("#loader-modal").hide();
             $("#share-modal").show();
-            $("#shared-link").val(settings.app_endpoint + "povezava/?k=" + data.download_key);
+            $("#shared-link").val(settings.urls.download_shared_object + data.download_key);
             if (settings.debug) {
                 console.log(key);
                 console.log(data.download_key);
@@ -1054,7 +1054,7 @@ export async function getEC() {
         }).done(function (data) {
             $("#loader-modal").hide();
             if (share) {
-                $("#read-write-shared-link").val(settings.app_endpoint + "povezava/?k=" + data.download_key);
+                $("#read-write-shared-link").val(settings.urls.download_shared_object + data.download_key);
                 $("#read-write-shared-link").show();
                 // $("button.share-object").find(`[data-key='${key}']`).attr("data-download-key", data.download_key).addClass("shared");
                 $("button[data-key='" + key + "']").addClass("shared");
@@ -1123,7 +1123,7 @@ export async function getEC() {
     function showJustReadModal(already_shared, key, download_key) {
         if (already_shared) {
             $("#share-modal").show();
-            $("#shared-link").val(settings.app_endpoint + "povezava/?k=" + download_key);
+            $("#shared-link").val(settings.urls.download_shared_object + download_key);
             $("#unshare").attr("data-key", key);
         } else {
             let share = confirm("Ali res želiš deliti datoteko " + key + "? Do datoteke bodo lahko dostopali vsi s pridobljeno povezavo.");
@@ -1155,7 +1155,7 @@ export async function getEC() {
                     $("#share-read").prop("checked", true);
                 }
 
-                $("#read-write-shared-link").val(settings.app_endpoint + "povezava/?k=" + download_key);
+                $("#read-write-shared-link").val(settings.urls.download_shared_object + download_key);
                 $("#read-write-shared-link").show();
             }
 
@@ -1218,7 +1218,9 @@ export async function getEC() {
 
                 listObjects(selectedFolder);
 
-                updateVersions(parent(key));
+                if (settings.plugins.include('update_versions')) {
+                    updateVersions(parent(key));
+                }
             });
         }
     });
