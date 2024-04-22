@@ -19,7 +19,7 @@ Currently it supports:
 # Usage
 1. `git clone https://github.com/rokj/stree-web.git`
 2. Download, configure, start your S3 server (e.g. minio) or set Amazon S3 endpoint.
-3. Set `s3_endpoint` and desired `bucket` in js/settings.js.
+3. Copy js/settings.dist.js to js/settings.js. Set `s3_endpoint` and desired `bucket`.
 4. Open index.html in your browser with CORS disabled (e.g. `./chrome --disable-web-security --user-data-dir="/home/user/tmp"`)
 
 # Developer notes
@@ -34,9 +34,9 @@ There are three files to work with:
 
 Additionaly [jquery](https://jquery.com/) is used for element manipulation in HTML, [bootstrap](https://getbootstrap.com/) for CSS-ing. Plan is to abolish jquery in the future, ...
 
-## Sharing
+## Sharing files
 
-For sharing to work, you have to implement service with 4 endpoints (customizable and set in settings.js):
+For sharing to work, you have to implement service with 4 endpoints which can be customizable and set in settings.js:
 - `/get-user-shares/`
 - `/share/`
 - `/unshare/`
@@ -44,7 +44,7 @@ For sharing to work, you have to implement service with 4 endpoints (customizabl
 
 ### `/get-user-shares/` 
 
-Following json request payload is sent to `/get-user-shares/` endpoint:
+**JSON GET request**:
 ```json
 {
   'access_key': 'XYZ'
@@ -53,7 +53,7 @@ Following json request payload is sent to `/get-user-shares/` endpoint:
 
 Based on `access_key` you can get differentiate users shared objects/files.
 
-`/get-user-shares/` should return following response:
+**JSON response**:
 ```json
 {
   "object_key1": {
@@ -84,12 +84,12 @@ todo ...
 todo ...
 
 ### `/download/`
-GET request example to `/download/` endpoint:
+**GET request** example:
 ```
 https://app_endpoint/download/?k=UNIQE_DOWNLOAD_KEY
 ```
 
-Based on `k` GET argument, `/download/` endpoint will redirect to a file which can be downloaded.
+Based on `k` GET argument, `/download/` endpoint should redirect to a URL where it can be downloaded.
 
 This is usually redirect to S3 download URL, which in case of CEPH with multi tenant support is constructed something like this:
 ```
