@@ -1,3 +1,4 @@
+//<![CDATA[
 import * as settings from "./settings.js?1";
 
 /*
@@ -1314,3 +1315,4 @@ export async function getEC() {
         }
     }
 }());
+//]]>
