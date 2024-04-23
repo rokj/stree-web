@@ -8,7 +8,7 @@ export let urls = {
         get_user_shares: "/get-user-shares/",
         share: "/share/",
         unshare: "/unshare/",
-        download_shared_object: `${settings.app_endpoint}download/?k=`,
+        download_shared_object: `${app_endpoint}download/?k=`,
         get_credentials: "/get-ec/",
         share_document: "/share-document/"
 };
