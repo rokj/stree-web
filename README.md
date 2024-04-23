@@ -16,7 +16,7 @@ Currently it supports:
 - [ ] sharing
 - [ ] editing
 
-# Usage
+# Install
 1. `git clone https://github.com/rokj/stree-web.git`
 2. Download, configure, start your S3 server (e.g. minio) or set Amazon S3 endpoint.
 3. Set `s3_endpoint` and desired `bucket` in js/settings.js.
