@@ -1,5 +1,6 @@
 //<![CDATA[
 import * as settings from "./settings.js?1";
+import {set_policy} from "./vendor/s3-acl-utils.js?1";
 
 /*
 function gets template from index.html with selector and replaces search
@@ -46,6 +47,20 @@ function debug(msg) {
 async function fetchLanguage(lang) {
     const response = await fetch(`lang/${lang}.json`);
     return response.json();
+}
+
+function translate(...args) {
+    if (args.length < 2) {
+        return "";
+    }
+
+    let str = args[0];
+
+    for (let i = 1; i < args.length; i++) {
+        str = str.replace(`[${i-1}]`, args[i]);
+    }
+
+    return str;
 }
 
 export function getUrlParam(param) {
@@ -164,7 +179,14 @@ export async function getEC() {
         document.querySelectorAll('[data-i18n]').forEach(element => {
             const key = element.getAttribute('data-i18n');
 
-            element.textContent = lang[key];
+            // this little hack sets language text to first inner span element or to inner text if there is no inner
+            // span element to be found
+            if (element.getElementsByTagName('span').length > 0) {
+                element.getElementsByTagName('span')[0].textContent = lang[key];
+            } else {
+                element.textContent = lang[key];
+            }
+
             if (element.tagName === "INPUT") {
                 element.setAttribute('placeholder', lang[key]);
             }
@@ -832,8 +854,10 @@ export async function getEC() {
 
         $("#progress-bar-modal").show();
         s3client.getObject(params, function (err, data) {
-            if (err) console.log(err, err.stack); // an error occurred
-            // else     console.log(data);           // successful response
+            if (err) {
+                debug(err);
+                debug(err.stack);
+            }
 
             $("#progress-bar-modal").hide();
             let blob = new Blob([data.Body], {type: data.ContentType});
@@ -981,10 +1005,49 @@ export async function getEC() {
         login();
     });
 
-    function shareObject(key) {
-        if (settings.debug) {
-            console.log("clicked share object");
+    async function setObjectPolicy(key, acl) {
+        let params = {
+            Bucket: settings.bucket_name
         }
+
+        let statements = [];
+        const getBucketPolicyResponse = await s3client.getBucketPolicy(params).promise();
+
+        debug("---- old statements ----");
+        debug(JSON.parse(getBucketPolicyResponse['Policy']));
+        let new_statements = set_policy(statements, acl, settings.bucket_name, key);
+
+        debug("---- new statements ----");
+        debug(JSON.stringify(new_statements));
+
+        let policy = {
+            "Version": "2012-10-17",
+            "Statement": new_statements
+        };
+
+        params = {
+            Bucket: settings.bucket_name,
+            Policy: JSON.stringify(policy)
+        };
+
+        const putBucketPolicyResponse = await s3client.putBucketPolicy(params, function (err, data) {
+            if (err) {
+                debug(`could not execute putBucketPolicy action for bucket ${settings.bucket_name}`);
+                debug(err);
+                debug(err.stack);
+            } else {
+                debug(`successfully set bucket policy for key ${key}`);
+            }
+        });
+
+        debug('putBucketPolicyResponse');
+        debug(putBucketPolicyResponse);
+
+        return putBucketPolicyResponse;
+    }
+
+    async function shareObject(key) {
+        debug("clicked share object");
 
         let access_key = sessionStorage.getItem('storage-access-key');
         let secret_key = sessionStorage.getItem('storage-secret-key');
@@ -997,9 +1060,12 @@ export async function getEC() {
 
         $("#loader-modal").show();
 
+        const setObjectPolicyReturn = await setObjectPolicy(key, 'readonly');
+
         let params = {
             access_key: access_key,
             secret_key: secret_key,
+            bucket: settings.bucket_name,
             key: key
         };
 
@@ -1009,14 +1075,13 @@ export async function getEC() {
             data: params,
             dataType: "json"
         }).done(function (data) {
-            console.log(data);
+            debug(data);
             $("#loader-modal").hide();
             $("#share-modal").show();
             $("#shared-link").val(settings.urls.download_shared_object + data.download_key);
-            if (settings.debug) {
-                console.log(key);
-                console.log(data.download_key);
-            }
+
+            debug(key);
+            debug(data.download_key);
 
             $("button[data-key='" + key + "']").addClass("shared");
             $("button[data-key='" + key + "']").attr("data-download-key", data.download_key);
@@ -1127,7 +1192,7 @@ export async function getEC() {
             $("#shared-link").val(settings.urls.download_shared_object + download_key);
             $("#unshare").attr("data-key", key);
         } else {
-            let share = confirm("Ali res želiš deliti datoteko " + key + "? Do datoteke bodo lahko dostopali vsi s pridobljeno povezavo.");
+            let share = confirm(translate(lang['confirm-share-file'], key));
             if (share) {
                 shareObject(key);
             }
