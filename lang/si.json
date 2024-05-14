@@ -19,5 +19,6 @@
     "new-folder": "Nova mapa",
     "file-upload": "Naloži datoteko",
     "directory-upload": "Naloži mapo",
-    "sign-out": "Odjava"
+    "sign-out": "Odjava",
+    "confirm-share-file": "Ali res želiš deliti datoteko [0]? Do datoteke bodo lahko dostopali vsi s pridobljeno povezavo."
 }

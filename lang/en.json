@@ -19,5 +19,6 @@
     "new-folder": "New folder",
     "file-upload": "Upload file",
     "directory-upload": "Upload directory",
-    "sign-out": "Sign out"
+    "sign-out": "Sign out",
+    "confirm-share-file": "You really want to share file [0]? Anyone with the link can access file and download it."
 }
