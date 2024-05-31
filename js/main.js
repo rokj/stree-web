@@ -1006,15 +1006,26 @@ export async function getEC() {
     });
 
     async function setObjectPolicy(key, acl) {
+        debug('start setObjectPolicy');
         let params = {
             Bucket: settings.bucket_name
         }
 
         let statements = [];
-        const getBucketPolicyResponse = await s3client.getBucketPolicy(params).promise();
+        try {
+            const getBucketPolicyResponse = await s3client.getBucketPolicy(params).promise();
+            statements = JSON.parse(getBucketPolicyResponse['Policy']);
 
-        debug("---- old statements ----");
-        debug(JSON.parse(getBucketPolicyResponse['Policy']));
+            debug("---- old statements ----");
+            debug(currentBucketPolicy);
+        } catch (e) {
+            debug(e);
+
+            if (e['code'] != 'NoSuchBucketPolicy') {
+                throw new Error(e);
+            }
+        }
+
         let new_statements = set_policy(statements, acl, settings.bucket_name, key);
 
         debug("---- new statements ----");
@@ -1042,6 +1053,8 @@ export async function getEC() {
 
         debug('putBucketPolicyResponse');
         debug(putBucketPolicyResponse);
+
+        debug('end setObjectPolicy');
 
         return putBucketPolicyResponse;
     }
