@@ -589,14 +589,19 @@ export async function getEC() {
 
             let html = '';
             let folders = [];
+            let sharedObjects = [];
 
             try {
                 // we send current objects so we do not traverse through all
-                let sharedObjects = [];
                 if (settings.plugins.includes("sharing")) {
                     sharedObjects = await getSharedObjects();
                 }
+            } catch (e) {
+                debug(`error getting shared objects`);
+                debug(e);
+            }
 
+            try {
                 for (let i = 0; i < allObjects.length; i++) {
                     let key = allObjects[i]['Key'];
                     let size = allObjects[i]['Size'];
