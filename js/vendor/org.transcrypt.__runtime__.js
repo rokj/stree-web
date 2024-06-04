@@ -766,7 +766,7 @@ Array.prototype.__repr__ = function () {
 };
 Array.prototype.__str__ = Array.prototype.__repr__;
 Array.prototype.append = function (element) {
-    this.push (element);
+    this.push(element);
 };
 Array.prototype.py_clear = function () {
     this.length = 0;

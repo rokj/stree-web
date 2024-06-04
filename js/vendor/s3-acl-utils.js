@@ -361,21 +361,21 @@ export let remove_statements = function(statements, bucket_name, prefix) {
 			out.append(statement);
 			continue;
 		}
-		if (__in__(bucket_resource, statement ['Resource'])) {
-			if (__in__('Condition', statement) && statement ['Condition'] !== null) {
-				let statement = remove_bucket_actions(statement, prefix, bucket_resource, false, false);
+		if (__in__(bucket_resource, statement['Resource'])) {
+			if (__in__('Condition', statement) && statement['Condition'] !== null) {
+				statement = remove_bucket_actions(statement, prefix, bucket_resource, false, false);
 			}
 			else {
-				let statement = remove_bucket_actions(statement, prefix, bucket_resource, read_only_in_use, write_only_in_use);
+				statement = remove_bucket_actions(statement, prefix, bucket_resource, read_only_in_use, write_only_in_use);
 			}
 		}
-		else if (__in__ (object_resource, statement ['Resource'])) {
-			let statement = remove_object_actions(statement, object_resource);
+		else if (__in__(object_resource, statement['Resource'])) {
+			statement = remove_object_actions(statement, object_resource);
 		}
-		if (isinstance (statement ['Action'], list) && statement ['Action']) {
-			if (__in__(bucket_resource, statement ['Resource']) && intersection(statement ['Action'], read_only_bucket_actions) == read_only_bucket_actions && statement ['Effect'] == 'Allow' && __in__ ('*', statement ['Principal'] ['AWS'])) {
-				if (__in__('Condition', statement) && statement ['Condition'] !== null) {
-					let string_equals_value = statement['Condition'] ['StringEquals'];
+		if (isinstance(statement['Action'], list) && statement['Action']) {
+			if (__in__(bucket_resource, statement['Resource']) && intersection(statement['Action'], read_only_bucket_actions) == read_only_bucket_actions && statement['Effect'] == 'Allow' && __in__('*', statement['Principal']['AWS'])) {
+				if (__in__('Condition', statement) && statement['Condition'] !== null) {
+					let string_equals_value = statement['Condition']['StringEquals'];
 					let py_values = [];
 					if (string_equals_value !== null) {
 						let py_values = string_equals_value['s3:prefix'];
@@ -386,7 +386,7 @@ export let remove_statements = function(statements, bucket_name, prefix) {
 					let s3_prefix_values = s3_prefix_values.union(set((function () {
 						let __accu0__ = [];
 						for (let v of py_values) {
-							__accu0__.append (((bucket_resource + '/') + v) + '*');
+							__accu0__.append(((bucket_resource + '/') + v) + '*');
 						}
 						return py_iter(__accu0__);
 					}) ()));
@@ -402,20 +402,20 @@ export let remove_statements = function(statements, bucket_name, prefix) {
 	let skip_bucket_statement = true;
 	let resource_prefix = (aws_resource_prefix + bucket_name) + '/';
 	for (let statement of out) {
-		if (any(starts_with_func (statement['Resource'], resource_prefix)) && !(s3_prefix_values.intersection(statement['Resource']))) {
+		if (any(starts_with_func(statement['Resource'], resource_prefix)) && !(s3_prefix_values.intersection(statement['Resource']))) {
 			let skip_bucket_statement = false;
 			break;
 		}
 	}
 	for (let statement of read_only_bucket_statements) {
-		if (skip_bucket_statement && __in__(bucket_resource, statement['Resource']) && statement ['Effect'] == 'Allow' && __in__('*', statement['Principal'] ['AWS']) && statement['Condition'] === null) {
+		if (skip_bucket_statement && __in__(bucket_resource, statement['Resource']) && statement['Effect'] == 'Allow' && __in__('*', statement['Principal']['AWS']) && statement['Condition'] === null) {
 			continue;
 		}
 		out.append(statement);
 	}
 	if (len (out) == 1) {
 		let statement = out [0];
-		if (__in__(bucket_resource, statement['Resource']) && intersection(statement['Action'], common_bucket_actions) == common_bucket_actions && statement['Effect'] == 'Allow' && __in__ ('*', statement['Principal'] ['AWS']) && statement['Condition'] === null) {
+		if (__in__(bucket_resource, statement['Resource']) && intersection(statement['Action'], common_bucket_actions) == common_bucket_actions && statement['Effect'] == 'Allow' && __in__ ('*', statement['Principal']['AWS']) && statement['Condition'] === null) {
 			let out = [];
 		}
 	}
