@@ -260,7 +260,7 @@ export let is_valid_statement = function(statement, bucket_name) {
 	if (statement['Effect'] != 'Allow') {
 		return false;
 	}
-	if (statement['Principal'].py_get('AWS') === null || !__in__('*', statement['Principal']['AWS'])) {
+	if (!__in__('AWS', statement['Principal']) || !__in__('*', statement['Principal']['AWS'])) {
 		return false;
 	}
 	let bucket_resource = aws_resource_prefix + bucket_name;
@@ -288,7 +288,7 @@ export let remove_bucket_actions = function(statement, prefix, bucket_resource, 
 			return ;
 		}
 		if (prefix != '') {
-			let string_equals_value = statement['Condition'].py_get('StringEquals', dict({}));
+			let string_equals_value = __in__('StringEquals', statement['Condition']) ? statement['Condition']['StringEquals'] : {};
 			let py_values = [];
 			if (string_equals_value) {
 				let py_values = string_equals_value['s3:prefix'];
@@ -296,7 +296,7 @@ export let remove_bucket_actions = function(statement, prefix, bucket_resource, 
 					let py_values = [];
 				}
 			}
-			if (__in__ (prefix, py_values)) {
+			if (__in__(prefix, py_values)) {
 				py_values.remove(prefix);
 			}
 			if (string_equals_value) {
