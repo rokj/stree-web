@@ -1031,7 +1031,7 @@ export async function getEC() {
             }
         }
 
-        let new_statements = set_policy(statements, acl, settings.bucket_name, key);
+        let new_statements = set_policy(statements['Statement'], acl, settings.bucket_name, key);
 
         debug("---- new statements ----");
         debug(JSON.stringify(new_statements));
