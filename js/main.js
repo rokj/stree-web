@@ -1022,7 +1022,7 @@ export async function getEC() {
             statements = JSON.parse(getBucketPolicyResponse['Policy']);
 
             debug("---- old statements ----");
-            debug(currentBucketPolicy);
+            debug(statements);
         } catch (e) {
             debug(e);
 
