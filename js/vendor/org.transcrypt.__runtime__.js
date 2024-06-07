@@ -289,6 +289,17 @@ export function __in__ (element, container) {
         );
     }
 };
+
+export function isEmpty(obj) {
+    for (const prop in obj) {
+        if (Object.hasOwn(obj, prop)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 export function __specialattrib__ (attrib) {
     return (attrib.startswith ('__') && attrib.endswith ('__')) || attrib == 'constructor' || attrib.startswith ('py_');
 };
@@ -925,8 +936,8 @@ Array.prototype.__eq__ = function (other) {
         return false;
     }
     if (this.__class__ == set) {
-        this.sort ();
-        other.sort ();
+        this.sort();
+        other.sort();
     }
     for (let i = 0; i < this.length; i++) {
         if (this [i] != other [i]) {

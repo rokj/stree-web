@@ -1016,13 +1016,17 @@ export async function getEC() {
             Bucket: settings.bucket_name
         }
 
-        let statements = [];
+        acl = 'none';
+
+        let statements = {
+            'Statement': []
+        };
         try {
             const getBucketPolicyResponse = await s3client.getBucketPolicy(params).promise();
             statements = JSON.parse(getBucketPolicyResponse['Policy']);
 
             debug("---- old statements ----");
-            debug(statements);
+            debug(JSON.stringify(statements));
         } catch (e) {
             debug(e);
 

@@ -1,12 +1,17 @@
 // partially transcrypt'ed from Python, 2024-04-23 12:16:45 -> https://www.transcrypt.org/
-import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, abs, all, any, assert, bool, bytearray, bytes, callable, chr, copy, deepcopy, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, input, int, isinstance, issubclass, len, list, map, max, min, object, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip} from './org.transcrypt.__runtime__.js';
+import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, abs, all, any, assert, bool, bytearray, bytes, callable, chr, copy, deepcopy, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, input, int, isinstance, issubclass, len, list, map, max, min, object, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip, isEmpty} from './org.transcrypt.__runtime__.js';
 let __name__ = '__main__';
 export let aws_resource_prefix = 'arn:aws:s3:::';
 export let common_bucket_actions = ['s3:GetBucketLocation'];
 export let read_only_bucket_actions = ['s3:ListBucket'];
 export let write_only_bucket_actions = ['s3:ListBucketMultipartUploads'];
 export let read_only_object_actions = ['s3:GetObject'];
-export let write_only_object_actions = ['s3:AbortMultipartUpload', 's3:DeleteObject', 's3:ListMultipartUploadParts', 's3:PutObject'];
+export let write_only_object_actions = [
+	's3:AbortMultipartUpload',
+	's3:DeleteObject',
+	's3:ListMultipartUploadParts',
+	's3:PutObject'
+];
 export let read_write_object_actions = read_only_object_actions.concat(write_only_object_actions);
 export let valid_actions = Array.prototype.concat.apply([], [common_bucket_actions, read_only_bucket_actions, write_only_bucket_actions, read_only_object_actions, write_only_object_actions]);
 export let bucket_policy_none = 'none';
@@ -14,16 +19,7 @@ export let bucket_policy_read_only = 'readonly';
 export let bucket_policy_read_write = 'readwrite';
 export let bucket_policy_write_only = 'writeonly';
 export let diff = function (a, b) {
-	let s = set (b);
-	return (function () {
-		let __accu0__ = [];
-		for (let x of a) {
-			if (!__in__ (x, s)) {
-				__accu0__.append (x);
-			}
-		}
-		return __accu0__;
-	}) ();
+	return a.filter(x => !b.includes(x));
 };
 export let union = function (a, b) {
 	for (let e of b) {
@@ -34,7 +30,7 @@ export let union = function (a, b) {
 	return a;
 };
 export let intersection = function (a, b) {
-	return list(set(a) & set(b));
+	return a.filter(x => b.includes(x));
 };
 export let new_bucket_statement = function (policy, bucket_name, prefix) {
 	let statements = [];
@@ -84,7 +80,7 @@ export let new_statements = function (policy, bucket_name, prefix) {
 };
 export let starts_with_func = function (resource, resource_prefix) {
 	return list(filter((function __lambda__ (x) {
-		return x.startswith (resource_prefix);
+		return x.startswith(resource_prefix);
 	}), resource));
 };
 export let get_in_use_policy = function (statements, bucket_name, prefix) {
@@ -93,19 +89,19 @@ export let get_in_use_policy = function (statements, bucket_name, prefix) {
 	let read_only_in_use = false;
 	let write_only_in_use = false;
 	for (let s of statements) {
-		if (!__in__ (object_resource, s['Resource']) && !(starts_with_func(s ['Resource'], resource_prefix))) {
-			if (intersection(s['Action'], read_only_object_actions) == read_only_object_actions) {
-				let read_only_in_use = true;
+		if (!__in__(object_resource, s['Resource']) && !(starts_with_func(s['Resource'], resource_prefix))) {
+			if (intersection(s['Action'], read_only_object_actions).__eq__(read_only_object_actions)) {
+				read_only_in_use = true;
 			}
-			if (intersection(s['Action'], write_only_object_actions) == write_only_object_actions) {
-				let write_only_in_use = true;
+			if (intersection(s['Action'], write_only_object_actions).__eq__(write_only_object_actions)) {
+				write_only_in_use = true;
 			}
 		}
-		if (read_only_in_use && write_only_in_use) {
+		if (read_only_in_use && write_only_in_use) { 
 			break;
 		}
 	}
-	return tuple ([read_only_in_use, write_only_in_use]);
+	return tuple([read_only_in_use, write_only_in_use]);
 };
 export let merge_condition_map = function (cond_map1, cond_map2) {
 	let out = dict({});
@@ -223,7 +219,7 @@ export let append_statement = function (statements, statement) {
 			statements[i]['Action'] = union(s['Action'], statement['Action']);
 			return statements;
 		}
-		if (intersection(s['Resource'], statement['Resource']) == statement['Resource'] && intersection(s['Action'], statement['Action']) == statement['Action'] && s['Effect'] == statement['Effect'] && intersection(s['Principal']['AWS'], statement['Principal']['AWS']) == statement['Principal']['AWS']) {
+		if (intersection(s['Resource'], statement['Resource']).__eq__(statement['Resource']) && intersection(s['Action'], statement['Action']).__eq__(statement['Action']) && s['Effect'] == statement['Effect'] && intersection(s['Principal']['AWS'], statement['Principal']['AWS']).__eq__(statement['Principal']['AWS'])) {
 			if (__in__('Condition', s) && __in__('Condition', statement) && deep_diff_mapper.map(s['Condition'], statement['Condition'])) {
 				return statements;
 			}
@@ -280,11 +276,11 @@ export let is_valid_statement = function(statement, bucket_name) {
 };
 export let remove_bucket_actions = function(statement, prefix, bucket_resource, read_only_in_use, write_only_in_use) {
 	let remove_read_only = function () {
-		if (!(intersection(statement['Action'], read_only_bucket_actions) == read_only_bucket_actions)) {
+		if (!intersection(statement['Action'], read_only_bucket_actions).__eq__(read_only_bucket_actions)) {
 			return ;
 		}
 		if (!(__in__('Condition', statement)) || statement['Condition'] === null) {
-			statement['Action'] = diff(statement ['Action'], read_only_bucket_actions);
+			statement['Action'] = diff(statement['Action'], read_only_bucket_actions);
 			return ;
 		}
 		if (prefix != '') {
@@ -300,25 +296,25 @@ export let remove_bucket_actions = function(statement, prefix, bucket_resource, 
 				py_values.remove(prefix);
 			}
 			if (string_equals_value) {
-				if (!(py_values)) {
+				if (len(py_values) == 0) {
 					delete string_equals_value['s3:prefix'];
 				}
-				if (!(string_equals_value)) {
+				if (isEmpty(string_equals_value)) {
 					delete statement['Condition']['StringEquals'];
 				}
 			}
-			if (!(__in__('Condition', statement)) || !(statement['Condition'])) {
+			if (__in__('Condition', statement) && isEmpty(statement['Condition'])) {
 				statement['Condition'] = null;
 				statement['Action'] = diff(statement['Action'], read_only_bucket_actions);
 			}
 		}
 	};
 	let remove_write_only = function () {
-		if (!(__in__ ('Condition', statement)) || statement ['Condition'] === null) {
+		if (__in__('Condition', statement) && statement['Condition'] === null) {
 			statement['Action'] = diff(statement ['Action'], write_only_bucket_actions);
 		}
 	};
-	if (len (statement ['Resource']) > 1) {
+	if (len(statement['Resource']) > 1) {
 		if (__in__(bucket_resource, statement['Resource'])) {
 			statement['Resource'].remove(bucket_resource);
 		}
@@ -351,8 +347,8 @@ export let remove_statements = function(statements, bucket_name, prefix) {
 	let bucket_resource = aws_resource_prefix + bucket_name;
 	let object_resource = (((aws_resource_prefix + bucket_name) + '/') + prefix) + '*';
 	let __left0__ = get_in_use_policy(statements, bucket_name, prefix);
-	let read_only_in_use = __left0__ [0];
-	let write_only_in_use = __left0__ [1];
+	let read_only_in_use = __left0__[0];
+	let write_only_in_use = __left0__[1];
 	let out = [];
 	let read_only_bucket_statements = [];
 	let s3_prefix_values = set();
@@ -372,8 +368,8 @@ export let remove_statements = function(statements, bucket_name, prefix) {
 		else if (__in__(object_resource, statement['Resource'])) {
 			statement = remove_object_actions(statement, object_resource);
 		}
-		if (isinstance(statement['Action'], list) && statement['Action']) {
-			if (__in__(bucket_resource, statement['Resource']) && intersection(statement['Action'], read_only_bucket_actions) == read_only_bucket_actions && statement['Effect'] == 'Allow' && __in__('*', statement['Principal']['AWS'])) {
+		if (isinstance(statement['Action'], list) && len(statement['Action']) > 0) {
+			if (__in__(bucket_resource, statement['Resource']) && intersection(statement['Action'], read_only_bucket_actions).__eq__(read_only_bucket_actions) && statement['Effect'] == 'Allow' && __in__('*', statement['Principal']['AWS'])) {
 				if (__in__('Condition', statement) && statement['Condition'] !== null) {
 					let string_equals_value = statement['Condition']['StringEquals'];
 					let py_values = [];
@@ -383,15 +379,14 @@ export let remove_statements = function(statements, bucket_name, prefix) {
 							let py_values = [];
 						}
 					}
-					let s3_prefix_values = s3_prefix_values.union(set((function () {
+					s3_prefix_values = s3_prefix_values.union(set((function () {
 						let __accu0__ = [];
 						for (let v of py_values) {
 							__accu0__.append(((bucket_resource + '/') + v) + '*');
 						}
 						return py_iter(__accu0__);
 					}) ()));
-				}
-				else if (!(s3_prefix_values)) {
+				} else if (s3_prefix_values.size > 0) {
 					read_only_bucket_statements.append(statement);
 					continue;
 				}
@@ -402,7 +397,7 @@ export let remove_statements = function(statements, bucket_name, prefix) {
 	let skip_bucket_statement = true;
 	let resource_prefix = (aws_resource_prefix + bucket_name) + '/';
 	for (let statement of out) {
-		if (any(starts_with_func(statement['Resource'], resource_prefix)) && !(s3_prefix_values.intersection(statement['Resource']))) {
+		if (any(starts_with_func(statement['Resource'], resource_prefix)) && len(s3_prefix_values.intersection(statement['Resource'])) == 0) {
 			let skip_bucket_statement = false;
 			break;
 		}
@@ -413,10 +408,16 @@ export let remove_statements = function(statements, bucket_name, prefix) {
 		}
 		out.append(statement);
 	}
-	if (len (out) == 1) {
-		let statement = out [0];
-		if (__in__(bucket_resource, statement['Resource']) && intersection(statement['Action'], common_bucket_actions) == common_bucket_actions && statement['Effect'] == 'Allow' && __in__ ('*', statement['Principal']['AWS']) && statement['Condition'] === null) {
-			let out = [];
+	if (len(out) == 1) {
+		let statement = out[0];
+		if (
+			__in__(bucket_resource, statement['Resource']) &&
+			intersection(statement['Action'], common_bucket_actions).__eq__(common_bucket_actions) &&
+			statement['Effect'] == 'Allow' &&
+			__in__('*', statement['Principal']['AWS']) &&
+			(!('Condition' in statement) || statement['Condition'] === null)
+		) {
+			out = [];
 		}
 	}
 	return out;
