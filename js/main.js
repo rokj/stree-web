@@ -1016,8 +1016,6 @@ export async function getEC() {
             Bucket: settings.bucket_name
         }
 
-        acl = 'none';
-
         let statements = {
             'Statement': []
         };
@@ -1167,7 +1165,7 @@ export async function getEC() {
         });
     }
 
-    $("#unshare").on("click", function () {
+    $("#unshare").on("click", async function () {
         if (settings.debug) {
             console.log("clicked unshare object");
         }
@@ -1183,6 +1181,8 @@ export async function getEC() {
         }
 
         $("#loader-modal").show();
+
+        const setObjectPolicyReturn = await setObjectPolicy(key, 'none');
 
         let params = {
             access_key: access_key,

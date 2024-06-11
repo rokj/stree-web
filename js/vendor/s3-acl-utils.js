@@ -1,5 +1,5 @@
 // partially transcrypt'ed from Python, 2024-04-23 12:16:45 -> https://www.transcrypt.org/
-import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, abs, all, any, assert, bool, bytearray, bytes, callable, chr, copy, deepcopy, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, input, int, isinstance, issubclass, len, list, map, max, min, object, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, set, setattr, sorted, str, sum, tuple, zip, isEmpty} from './org.transcrypt.__runtime__.js';
+import {AssertionError, AttributeError, BaseException, DeprecationWarning, Exception, IndexError, IterableError, KeyError, NotImplementedError, RuntimeWarning, StopIteration, UserWarning, ValueError, Warning, __JsIterator__, __PyIterator__, __Terminal__, __add__, __and__, __call__, __class__, __envir__, __eq__, __floordiv__, __ge__, __get__, __getcm__, __getitem__, __getslice__, __getsm__, __gt__, __i__, __iadd__, __iand__, __idiv__, __ijsmod__, __ilshift__, __imatmul__, __imod__, __imul__, __in__, __init__, __ior__, __ipow__, __irshift__, __isub__, __ixor__, __jsUsePyNext__, __jsmod__, __k__, __kwargtrans__, __le__, __lshift__, __lt__, __matmul__, __mergefields__, __mergekwargtrans__, __mod__, __mul__, __ne__, __neg__, __nest__, __or__, __pow__, __pragma__, __pyUseJsNext__, __rshift__, __setitem__, __setproperty__, __setslice__, __sort__, __specialattrib__, __sub__, __super__, __t__, __terminal__, __truediv__, __withblock__, __xor__, abs, all, any, assert, bool, bytearray, bytes, callable, chr, copy, deepcopy, delattr, dict, dir, divmod, enumerate, filter, float, getattr, hasattr, input, int, isinstance, issubclass, len, list, map, max, min, object, ord, pow, print, property, py_TypeError, py_iter, py_metatype, py_next, py_reversed, py_typeof, range, repr, round, setattr, sorted, str, sum, tuple, zip, isEmpty} from './org.transcrypt.__runtime__.js';
 let __name__ = '__main__';
 export let aws_resource_prefix = 'arn:aws:s3:::';
 export let common_bucket_actions = ['s3:GetBucketLocation'];
@@ -202,25 +202,53 @@ export let deep_diff_mapper = function () {
   }
 }();
 
-export let lists_are_equal = function (a, b) {
-	let tmp = set (a) - set (b);
-	if (tmp) {
-		return false;
+export let lists_are_equal = function(a, b) {
+	let setA = new Set(a);
+	let setB = new Set(b);
+
+    if (setA.size === setB.size && [...setA].every((x) => setB.has(x))) {
+		return true;
 	}
-	return true;
+
+	return false;
 };
+
+export let condition_equal = function(condition1, condition2) {
+	if (!__in__('Condition', condition1) && !__in__('Condition', condition2)) {
+		return true;
+	}
+
+	if (__in__('Condition', condition1) && __in__('Condition', condition2) && deep_diff_mapper.map(condition1['Condition'], condition2['Condition'])) {
+		return true;
+	}
+
+	return false;
+}
 export let append_statement = function (statements, statement) {
 	for (let [i, s] of enumerate(statements)) {
-		if (lists_are_equal(s['Action'], statement['Action']) && s['Effect'] == statement['Effect'] && lists_are_equal(s['Principal']['AWS'], statement['Principal']['AWS']) && __in__('Condition', s) && __in__('Condition', statement) && deep_diff_mapper.map(s['Condition'], statement['Condition'])) {
+		if (lists_are_equal(s['Action'], statement['Action']) &&
+			s['Effect'] == statement['Effect'] &&
+			lists_are_equal(s['Principal']['AWS'], statement['Principal']['AWS']) &&
+			condition_equal(s, statement)
+		) {
 			statements[i]['Resource'] = union(s['Resource'], statement['Resource']);
 			return statements;
-		}
-		else if (lists_are_equal(s['Resource'], statement['Resource']) && lists_are_equal(s['Effect'], statement['Effect']) && lists_are_equal(s['Principal']['AWS'], statement['Principal']['AWS']) && __in__('Condition', s) && __in__('Condition', statement) && deep_diff_mapper.map(s['Condition'], statement['Condition'])) {
+		} else if (
+			lists_are_equal(s['Resource'], statement['Resource']) &&
+			lists_are_equal(s['Effect'], statement['Effect']) &&
+			lists_are_equal(s['Principal']['AWS'], statement['Principal']['AWS']) &&
+			condition_equal(s, statement)) {
 			statements[i]['Action'] = union(s['Action'], statement['Action']);
 			return statements;
 		}
-		if (intersection(s['Resource'], statement['Resource']).__eq__(statement['Resource']) && intersection(s['Action'], statement['Action']).__eq__(statement['Action']) && s['Effect'] == statement['Effect'] && intersection(s['Principal']['AWS'], statement['Principal']['AWS']).__eq__(statement['Principal']['AWS'])) {
-			if (__in__('Condition', s) && __in__('Condition', statement) && deep_diff_mapper.map(s['Condition'], statement['Condition'])) {
+
+		if (
+			intersection(s['Resource'], statement['Resource']).__eq__(statement['Resource']) &&
+			intersection(s['Action'], statement['Action']).__eq__(statement['Action']) &&
+			s['Effect'] == statement['Effect'] &&
+			intersection(s['Principal']['AWS'], statement['Principal']['AWS']).__eq__(statement['Principal']['AWS'])
+		) {
+			if (condition_equal(s, statement)) {
 				return statements;
 			}
 			if (__in__('Condition', s) && s['Condition'] !== null && __in__('Condition', statement) && statement['Condition'] !== null) {
@@ -231,7 +259,7 @@ export let append_statement = function (statements, statement) {
 			}
 		}
 	}
-	if (!(isinstance(statement['Action'], list) && isinstance(statement['Resource'], list) && len(statement['Action']) == 0 && len(statement['Resource']) == 0)) {
+	if (isinstance(statement['Action'], list) && isinstance(statement['Resource'], list) && len(statement['Action']) > 0 && len(statement['Resource']) > 0) {
 		statements.append(statement);
 	}
 	return statements;
@@ -287,9 +315,9 @@ export let remove_bucket_actions = function(statement, prefix, bucket_resource, 
 			let string_equals_value = __in__('StringEquals', statement['Condition']) ? statement['Condition']['StringEquals'] : {};
 			let py_values = [];
 			if (string_equals_value) {
-				let py_values = string_equals_value['s3:prefix'];
+				py_values = string_equals_value['s3:prefix'];
 				if (py_values === null) {
-					let py_values = [];
+					py_values = [];
 				}
 			}
 			if (__in__(prefix, py_values)) {
@@ -351,7 +379,7 @@ export let remove_statements = function(statements, bucket_name, prefix) {
 	let write_only_in_use = __left0__[1];
 	let out = [];
 	let read_only_bucket_statements = [];
-	let s3_prefix_values = set();
+	let s3_prefix_values = new Set();
 	for (let statement of statements) {
 		if (!(is_valid_statement(statement, bucket_name))) {
 			out.append(statement);
@@ -374,18 +402,15 @@ export let remove_statements = function(statements, bucket_name, prefix) {
 					let string_equals_value = statement['Condition']['StringEquals'];
 					let py_values = [];
 					if (string_equals_value !== null) {
-						let py_values = string_equals_value['s3:prefix'];
+						py_values = string_equals_value['s3:prefix'];
 						if (py_values === null) {
-							let py_values = [];
+							py_values = [];
 						}
 					}
-					s3_prefix_values = s3_prefix_values.union(set((function () {
-						let __accu0__ = [];
-						for (let v of py_values) {
-							__accu0__.append(((bucket_resource + '/') + v) + '*');
-						}
-						return py_iter(__accu0__);
-					}) ()));
+
+					py_values.map(x => bucket_resource + '/' + x + '*');
+
+					s3_prefix_values = s3_prefix_values.union(new Set(py_values));
 				} else if (s3_prefix_values.size > 0) {
 					read_only_bucket_statements.append(statement);
 					continue;
@@ -397,13 +422,14 @@ export let remove_statements = function(statements, bucket_name, prefix) {
 	let skip_bucket_statement = true;
 	let resource_prefix = (aws_resource_prefix + bucket_name) + '/';
 	for (let statement of out) {
-		if (any(starts_with_func(statement['Resource'], resource_prefix)) && len(s3_prefix_values.intersection(statement['Resource'])) == 0) {
-			let skip_bucket_statement = false;
+		if (any(starts_with_func(statement['Resource'], resource_prefix)) && s3_prefix_values.intersection(new Set(statement['Resource'])).size == 0) {
+			skip_bucket_statement = false;
 			break;
 		}
 	}
 	for (let statement of read_only_bucket_statements) {
-		if (skip_bucket_statement && __in__(bucket_resource, statement['Resource']) && statement['Effect'] == 'Allow' && __in__('*', statement['Principal']['AWS']) && statement['Condition'] === null) {
+		if (skip_bucket_statement && __in__(bucket_resource, statement['Resource']) && statement['Effect'] == 'Allow' &&
+			__in__('*', statement['Principal']['AWS']) && statement['Condition'] === null) {
 			continue;
 		}
 		out.append(statement);

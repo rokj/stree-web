@@ -284,8 +284,8 @@ export function __in__ (element, container) {
     else {
         return (
             container.indexOf ?
-            container.indexOf (element) > -1 :
-            container.hasOwnProperty (element)
+            container.indexOf(element) > -1 :
+            container.hasOwnProperty(element)
         );
     }
 };
@@ -827,11 +827,12 @@ export function tuple (iterable) {
 }
 tuple.__name__ = 'tuple';
 tuple.__bases__ = [object];
-export function set (iterable) {
+/*
+export function set(iterable) {
     let instance = [];
     if (iterable) {
         for (let index = 0; index < iterable.length; index++) {
-            instance.add (iterable [index]);
+            instance.add(iterable [index]);
         }
     }
     instance.__class__ = set;
@@ -839,6 +840,7 @@ export function set (iterable) {
 }
 set.__name__ = 'set';
 set.__bases__ = [object];
+*/
 Array.prototype.__bindexOf__ = function (element) {
     element += '';
     let mindex = 0;
@@ -859,12 +861,12 @@ Array.prototype.__bindexOf__ = function (element) {
     return -1;
 };
 Array.prototype.add = function (element) {
-    if (this.indexOf (element) == -1) {
-        this.push (element);
+    if (this.indexOf(element) == -1) {
+        this.push(element);
     }
 };
 Array.prototype.discard = function (element) {
-    var index = this.indexOf (element);
+    var index = this.indexOf(element);
     if (index != -1) {
         this.splice (index, 1);
     }
@@ -935,12 +937,8 @@ Array.prototype.__eq__ = function (other) {
     if (this.length != other.length) {
         return false;
     }
-    if (this.__class__ == set) {
-        this.sort();
-        other.sort();
-    }
     for (let i = 0; i < this.length; i++) {
-        if (this [i] != other [i]) {
+        if (this[i] != other[i]) {
             return false;
         }
     }
