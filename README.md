@@ -1,7 +1,9 @@
 # Stree web - simple S3 browser client
-Stree web client is simple web/browser client for file management on S3 endpoints, such as Amazon S3, Ceph, Minio, ...  
+Stree web client is simple web/browser client for file management on S3 endpoints, such as Amazon S3, Ceph, Minio, ... 
 
-This is not a node app. Download, configure settings and run it in a browser.
+It supports path based S3 endpoints.  
+
+Download, configure settings and run it in a browser.
 
 Currently it supports:
 - [x] single bucket
